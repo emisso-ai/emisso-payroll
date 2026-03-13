@@ -1,67 +1,18 @@
 {
-  "name": "@emisso/payroll",
-  "version": "0.1.0",
-  "description": "Chilean payroll calculation engine — AFP, health, tax, unemployment, Previred, and more",
-  "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    },
-    "./providers": {
-      "types": "./dist/providers.d.ts",
-      "import": "./dist/providers.mjs",
-      "require": "./dist/providers.js"
-    }
-  },
-  "files": [
-    "dist"
-  ],
+  "name": "@emisso/payroll-monorepo",
+  "private": true,
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "test": "vitest",
-    "test:run": "vitest --run",
-    "lint": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
-  },
-  "keywords": [
-    "payroll",
-    "chile",
-    "remuneraciones",
-    "afp",
-    "previred",
-    "liquidacion",
-    "impuestos",
-    "latam"
-  ],
-  "author": "Emisso <hello@emisso.ai>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/emisso-ai/emisso-payroll"
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "test:run": "pnpm -r test:run",
+    "lint": "pnpm -r lint",
+    "clean": "pnpm -r exec rm -rf dist node_modules"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=18",
+    "pnpm": ">=9"
   },
-  "dependencies": {
-    "zod": "^3.23.0"
-  },
-  "optionalDependencies": {
-    "cheerio": "^1.2.0",
-    "effect": "^3.0.0",
-    "fast-xml-parser": "^5.3.0"
-  },
-  "devDependencies": {
-    "@modelcontextprotocol/sdk": "^1.26.0",
-    "@types/node": "^22.0.0",
-    "tsup": "^8.3.0",
-    "tsx": "^4.21.0",
-    "typescript": "^5.7.0",
-    "vitest": "^2.1.0"
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
   }
 }
