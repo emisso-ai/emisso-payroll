@@ -12,7 +12,8 @@ import {
   type ReferenceFamilyAllowance,
   type NewReferenceIndicator,
 } from "../db/schema/index.js";
-import { DbError, NotFoundError } from "../core/effect/app-error.js";
+import { DbError } from "../core/effect/app-error.js";
+import { queryOneOrFail } from "../core/effect/repo-helpers.js";
 
 export function createReferenceRepo(db: PgDatabase<any>) {
   return {
@@ -22,9 +23,12 @@ export function createReferenceRepo(db: PgDatabase<any>) {
      */
     getIndicators(
       date?: string,
-    ): Effect.Effect<ReferenceIndicator, DbError | NotFoundError> {
-      return Effect.tryPromise({
-        try: () => {
+    ) {
+      return queryOneOrFail(
+        "reference.getIndicators",
+        "ReferenceIndicator",
+        date ?? "latest",
+        () => {
           const query = db
             .select()
             .from(referenceIndicators)
@@ -38,18 +42,6 @@ export function createReferenceRepo(db: PgDatabase<any>) {
           }
           return query.then((rows) => rows[0]);
         },
-        catch: (e) => DbError.make("reference.getIndicators", e),
-      }).pipe(
-        Effect.flatMap((row) =>
-          row
-            ? Effect.succeed(row)
-            : Effect.fail(
-                NotFoundError.make(
-                  "ReferenceIndicator",
-                  undefined,
-                ),
-              ),
-        ),
       );
     },
 

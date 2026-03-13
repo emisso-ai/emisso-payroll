@@ -7,7 +7,7 @@ import { ValidationError } from "../core/effect/app-error.js";
 import {
   jsonResponse,
   createdResponse,
-  toErrorResponseFromUnknown,
+  handleEffect,
 } from "../core/effect/http-response.js";
 
 export function createEmployeeHandlers(deps: {
@@ -16,79 +16,53 @@ export function createEmployeeHandlers(deps: {
 }) {
   const { employeeService, employeeRepo } = deps;
 
-  const listEmployees: HandlerFn = async (_req, ctx) => {
-    try {
-      const url = new URL(_req.url);
-      const isActive = url.searchParams.get("isActive");
-      const filters = isActive !== null ? { isActive: isActive === "true" } : undefined;
-      const result = await Effect.runPromise(
-        employeeRepo.list(ctx.tenantId, filters),
-      );
-      return jsonResponse(result);
-    } catch (e) {
-      return toErrorResponseFromUnknown(e);
-    }
+  const listEmployees: HandlerFn = (_req, ctx) => {
+    const url = new URL(_req.url);
+    const isActive = url.searchParams.get("isActive");
+    const filters = isActive !== null ? { isActive: isActive === "true" } : undefined;
+    return handleEffect(employeeRepo.list(ctx.tenantId, filters));
   };
 
-  const getEmployee: HandlerFn = async (_req, ctx) => {
-    try {
-      const result = await Effect.runPromise(
-        employeeRepo.getById(ctx.tenantId, ctx.params.id!),
-      );
-      return jsonResponse(result);
-    } catch (e) {
-      return toErrorResponseFromUnknown(e);
-    }
-  };
+  const getEmployee: HandlerFn = (_req, ctx) =>
+    handleEffect(employeeRepo.getById(ctx.tenantId, ctx.params.id!));
 
-  const createEmployee: HandlerFn = async (req, ctx) => {
-    try {
-      const body = await req.json();
-      const parsed = CreateEmployeeSchema.safeParse(body);
-      if (!parsed.success) {
-        throw ValidationError.fromZodErrors(
-          "Invalid employee data",
-          parsed.error.issues,
-        );
-      }
-      const result = await Effect.runPromise(
-        employeeService.create(ctx.tenantId, parsed.data),
-      );
-      return createdResponse(result);
-    } catch (e) {
-      return toErrorResponseFromUnknown(e);
-    }
-  };
+  const createEmployee: HandlerFn = (req, ctx) =>
+    handleEffect(
+      Effect.gen(function* () {
+        const body = yield* Effect.tryPromise({
+          try: () => req.json(),
+          catch: () => ValidationError.make("Invalid JSON body"),
+        });
+        const parsed = CreateEmployeeSchema.safeParse(body);
+        if (!parsed.success) {
+          return yield* Effect.fail(
+            ValidationError.fromZodErrors("Invalid employee data", parsed.error.issues),
+          );
+        }
+        return yield* employeeService.create(ctx.tenantId, parsed.data);
+      }),
+      createdResponse,
+    );
 
-  const updateEmployee: HandlerFn = async (req, ctx) => {
-    try {
-      const body = await req.json();
-      const parsed = UpdateEmployeeSchema.safeParse(body);
-      if (!parsed.success) {
-        throw ValidationError.fromZodErrors(
-          "Invalid employee data",
-          parsed.error.issues,
-        );
-      }
-      const result = await Effect.runPromise(
-        employeeService.update(ctx.tenantId, ctx.params.id!, parsed.data),
-      );
-      return jsonResponse(result);
-    } catch (e) {
-      return toErrorResponseFromUnknown(e);
-    }
-  };
+  const updateEmployee: HandlerFn = (req, ctx) =>
+    handleEffect(
+      Effect.gen(function* () {
+        const body = yield* Effect.tryPromise({
+          try: () => req.json(),
+          catch: () => ValidationError.make("Invalid JSON body"),
+        });
+        const parsed = UpdateEmployeeSchema.safeParse(body);
+        if (!parsed.success) {
+          return yield* Effect.fail(
+            ValidationError.fromZodErrors("Invalid employee data", parsed.error.issues),
+          );
+        }
+        return yield* employeeService.update(ctx.tenantId, ctx.params.id!, parsed.data);
+      }),
+    );
 
-  const deactivateEmployee: HandlerFn = async (_req, ctx) => {
-    try {
-      const result = await Effect.runPromise(
-        employeeService.deactivate(ctx.tenantId, ctx.params.id!),
-      );
-      return jsonResponse(result);
-    } catch (e) {
-      return toErrorResponseFromUnknown(e);
-    }
-  };
+  const deactivateEmployee: HandlerFn = (_req, ctx) =>
+    handleEffect(employeeService.deactivate(ctx.tenantId, ctx.params.id!));
 
   return {
     listEmployees,

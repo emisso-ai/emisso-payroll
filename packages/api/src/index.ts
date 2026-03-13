@@ -19,7 +19,9 @@ export {
   jsonResponse,
   createdResponse,
   noContentResponse,
+  handleEffect,
 } from "./core/effect/http-response.js";
+export { queryOneOrFail } from "./core/effect/repo-helpers.js";
 export { buildReferenceData, employeeToEngineInput } from "./core/bridge.js";
 
 // ── Validation ──

@@ -6,7 +6,7 @@ import { UpsertIndicatorsSchema } from "../validation/schemas.js";
 import { ValidationError } from "../core/effect/app-error.js";
 import {
   jsonResponse,
-  toErrorResponseFromUnknown,
+  handleEffect,
 } from "../core/effect/http-response.js";
 
 export function createReferenceHandlers(deps: {
@@ -15,43 +15,34 @@ export function createReferenceHandlers(deps: {
 }) {
   const { referenceService, referenceRepo } = deps;
 
-  const getReferenceData: HandlerFn = async (_req, ctx) => {
-    try {
-      const url = new URL(_req.url);
-      const date = url.searchParams.get("date") ?? undefined;
-      const result = await Effect.runPromise(
-        referenceService.buildReferenceData(date),
-      );
-      return jsonResponse(result);
-    } catch (e) {
-      return toErrorResponseFromUnknown(e);
-    }
+  const getReferenceData: HandlerFn = (_req, ctx) => {
+    const url = new URL(_req.url);
+    const date = url.searchParams.get("date") ?? undefined;
+    return handleEffect(referenceService.buildReferenceData(date));
   };
 
-  const upsertReferenceData: HandlerFn = async (req, _ctx) => {
-    try {
-      const body = await req.json();
-      const parsed = UpsertIndicatorsSchema.safeParse(body);
-      if (!parsed.success) {
-        throw ValidationError.fromZodErrors(
-          "Invalid indicators data",
-          parsed.error.issues,
-        );
-      }
-      const result = await Effect.runPromise(
-        referenceRepo.upsertIndicators({
+  const upsertReferenceData: HandlerFn = (req, _ctx) =>
+    handleEffect(
+      Effect.gen(function* () {
+        const body = yield* Effect.tryPromise({
+          try: () => req.json(),
+          catch: () => ValidationError.make("Invalid JSON body"),
+        });
+        const parsed = UpsertIndicatorsSchema.safeParse(body);
+        if (!parsed.success) {
+          return yield* Effect.fail(
+            ValidationError.fromZodErrors("Invalid indicators data", parsed.error.issues),
+          );
+        }
+        return yield* referenceRepo.upsertIndicators({
           effectiveDate: parsed.data.effectiveDate,
           uf: String(parsed.data.uf),
           utm: String(parsed.data.utm),
           uta: String(parsed.data.uta),
           imm: String(parsed.data.imm),
-        }),
-      );
-      return jsonResponse(result);
-    } catch (e) {
-      return toErrorResponseFromUnknown(e);
-    }
-  };
+        });
+      }),
+    );
 
   return { getReferenceData, upsertReferenceData };
 }

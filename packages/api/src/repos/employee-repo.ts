@@ -2,7 +2,8 @@ import { Effect } from "effect";
 import { and, eq } from "drizzle-orm";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import { employees, type Employee, type NewEmployee } from "../db/schema/index.js";
-import { DbError, NotFoundError } from "../core/effect/app-error.js";
+import { DbError } from "../core/effect/app-error.js";
+import { queryOneOrFail } from "../core/effect/repo-helpers.js";
 
 export function createEmployeeRepo(db: PgDatabase<any>) {
   return {
@@ -28,26 +29,18 @@ export function createEmployeeRepo(db: PgDatabase<any>) {
     getById(
       tenantId: string,
       employeeId: string,
-    ): Effect.Effect<Employee, DbError | NotFoundError> {
-      return Effect.tryPromise({
-        try: () =>
-          db
-            .select()
-            .from(employees)
-            .where(
-              and(
-                eq(employees.id, employeeId),
-                eq(employees.tenantId, tenantId),
-              ),
-            )
-            .then((rows) => rows[0]),
-        catch: (e) => DbError.make("employee.getById", e),
-      }).pipe(
-        Effect.flatMap((row) =>
-          row
-            ? Effect.succeed(row)
-            : Effect.fail(NotFoundError.make("Employee", employeeId)),
-        ),
+    ) {
+      return queryOneOrFail("employee.getById", "Employee", employeeId, () =>
+        db
+          .select()
+          .from(employees)
+          .where(
+            and(
+              eq(employees.id, employeeId),
+              eq(employees.tenantId, tenantId),
+            ),
+          )
+          .then((rows) => rows[0]),
       );
     },
 
@@ -70,54 +63,38 @@ export function createEmployeeRepo(db: PgDatabase<any>) {
       tenantId: string,
       employeeId: string,
       data: Partial<Omit<NewEmployee, "id" | "tenantId" | "createdAt">>,
-    ): Effect.Effect<Employee, DbError | NotFoundError> {
-      return Effect.tryPromise({
-        try: () =>
-          db
-            .update(employees)
-            .set({ ...data, updatedAt: new Date() })
-            .where(
-              and(
-                eq(employees.id, employeeId),
-                eq(employees.tenantId, tenantId),
-              ),
-            )
-            .returning()
-            .then((rows) => rows[0]),
-        catch: (e) => DbError.make("employee.update", e),
-      }).pipe(
-        Effect.flatMap((row) =>
-          row
-            ? Effect.succeed(row)
-            : Effect.fail(NotFoundError.make("Employee", employeeId)),
-        ),
+    ) {
+      return queryOneOrFail("employee.update", "Employee", employeeId, () =>
+        db
+          .update(employees)
+          .set({ ...data, updatedAt: new Date() })
+          .where(
+            and(
+              eq(employees.id, employeeId),
+              eq(employees.tenantId, tenantId),
+            ),
+          )
+          .returning()
+          .then((rows) => rows[0]),
       );
     },
 
     deactivate(
       tenantId: string,
       employeeId: string,
-    ): Effect.Effect<Employee, DbError | NotFoundError> {
-      return Effect.tryPromise({
-        try: () =>
-          db
-            .update(employees)
-            .set({ isActive: false, updatedAt: new Date() })
-            .where(
-              and(
-                eq(employees.id, employeeId),
-                eq(employees.tenantId, tenantId),
-              ),
-            )
-            .returning()
-            .then((rows) => rows[0]),
-        catch: (e) => DbError.make("employee.deactivate", e),
-      }).pipe(
-        Effect.flatMap((row) =>
-          row
-            ? Effect.succeed(row)
-            : Effect.fail(NotFoundError.make("Employee", employeeId)),
-        ),
+    ) {
+      return queryOneOrFail("employee.deactivate", "Employee", employeeId, () =>
+        db
+          .update(employees)
+          .set({ isActive: false, updatedAt: new Date() })
+          .where(
+            and(
+              eq(employees.id, employeeId),
+              eq(employees.tenantId, tenantId),
+            ),
+          )
+          .returning()
+          .then((rows) => rows[0]),
       );
     },
   };

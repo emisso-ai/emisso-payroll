@@ -13,11 +13,8 @@ import {
   type Earning,
   type Deduction,
 } from "../db/schema/index.js";
-import {
-  DbError,
-  NotFoundError,
-  ConflictError,
-} from "../core/effect/app-error.js";
+import { DbError, ConflictError } from "../core/effect/app-error.js";
+import { queryOneOrFail } from "../core/effect/repo-helpers.js";
 
 export function createPayrollRepo(db: PgDatabase<any>) {
   return {
@@ -49,26 +46,18 @@ export function createPayrollRepo(db: PgDatabase<any>) {
     getRunById(
       tenantId: string,
       runId: string,
-    ): Effect.Effect<PayrollRun, DbError | NotFoundError> {
-      return Effect.tryPromise({
-        try: () =>
-          db
-            .select()
-            .from(payrollRuns)
-            .where(
-              and(
-                eq(payrollRuns.id, runId),
-                eq(payrollRuns.tenantId, tenantId),
-              ),
-            )
-            .then((rows) => rows[0]),
-        catch: (e) => DbError.make("payrollRun.getById", e),
-      }).pipe(
-        Effect.flatMap((row) =>
-          row
-            ? Effect.succeed(row)
-            : Effect.fail(NotFoundError.make("PayrollRun", runId)),
-        ),
+    ) {
+      return queryOneOrFail("payrollRun.getById", "PayrollRun", runId, () =>
+        db
+          .select()
+          .from(payrollRuns)
+          .where(
+            and(
+              eq(payrollRuns.id, runId),
+              eq(payrollRuns.tenantId, tenantId),
+            ),
+          )
+          .then((rows) => rows[0]),
       );
     },
 

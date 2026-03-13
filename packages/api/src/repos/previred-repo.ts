@@ -5,7 +5,8 @@ import {
   previredFiles,
   type PreviredFile,
 } from "../db/schema/index.js";
-import { DbError, NotFoundError } from "../core/effect/app-error.js";
+import { DbError } from "../core/effect/app-error.js";
+import { queryOneOrFail } from "../core/effect/repo-helpers.js";
 
 export function createPreviredRepo(db: PgDatabase<any>) {
   return {
@@ -32,26 +33,18 @@ export function createPreviredRepo(db: PgDatabase<any>) {
     getById(
       tenantId: string,
       fileId: string,
-    ): Effect.Effect<PreviredFile, DbError | NotFoundError> {
-      return Effect.tryPromise({
-        try: () =>
-          db
-            .select()
-            .from(previredFiles)
-            .where(
-              and(
-                eq(previredFiles.id, fileId),
-                eq(previredFiles.tenantId, tenantId),
-              ),
-            )
-            .then((rows) => rows[0]),
-        catch: (e) => DbError.make("previred.getById", e),
-      }).pipe(
-        Effect.flatMap((row) =>
-          row
-            ? Effect.succeed(row)
-            : Effect.fail(NotFoundError.make("PreviredFile", fileId)),
-        ),
+    ) {
+      return queryOneOrFail("previred.getById", "PreviredFile", fileId, () =>
+        db
+          .select()
+          .from(previredFiles)
+          .where(
+            and(
+              eq(previredFiles.id, fileId),
+              eq(previredFiles.tenantId, tenantId),
+            ),
+          )
+          .then((rows) => rows[0]),
       );
     },
   };
