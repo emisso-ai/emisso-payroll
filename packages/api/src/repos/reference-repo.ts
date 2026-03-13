@@ -69,7 +69,7 @@ export function createReferenceRepo(db: PgDatabase<any>) {
         Effect.map((rows) => {
           if (rows.length === 0) return [];
           const latestDate = rows[0]!.effectiveDate;
-          return rows.filter((r) => r.effectiveDate === latestDate);
+          return rows.filter((r) => String(r.effectiveDate) === String(latestDate));
         }),
       );
     },
@@ -96,7 +96,7 @@ export function createReferenceRepo(db: PgDatabase<any>) {
         Effect.map((rows) => {
           if (rows.length === 0) return [];
           const latestDate = rows[0]!.effectiveDate;
-          return rows.filter((r) => r.effectiveDate === latestDate);
+          return rows.filter((r) => String(r.effectiveDate) === String(latestDate));
         }),
       );
     },
@@ -123,7 +123,7 @@ export function createReferenceRepo(db: PgDatabase<any>) {
         Effect.map((rows) => {
           if (rows.length === 0) return [];
           const latestDate = rows[0]!.effectiveDate;
-          return rows.filter((r) => r.effectiveDate === latestDate);
+          return rows.filter((r) => String(r.effectiveDate) === String(latestDate));
         }),
       );
     },

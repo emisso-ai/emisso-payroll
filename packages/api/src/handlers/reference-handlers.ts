@@ -18,6 +18,11 @@ export function createReferenceHandlers(deps: {
   const getReferenceData: HandlerFn = (_req, ctx) => {
     const url = new URL(_req.url);
     const date = url.searchParams.get("date") ?? undefined;
+    if (date !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return handleEffect(
+        Effect.fail(ValidationError.make("date must be in YYYY-MM-DD format", "date")),
+      );
+    }
     return handleEffect(referenceService.buildReferenceData(date));
   };
 

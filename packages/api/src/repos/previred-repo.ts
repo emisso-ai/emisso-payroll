@@ -24,6 +24,13 @@ export function createPreviredRepo(db: PgDatabase<any>) {
               payrollRunId: runId,
               fileContent: content,
             })
+            .onConflictDoUpdate({
+              target: [previredFiles.tenantId, previredFiles.payrollRunId],
+              set: {
+                fileContent: content,
+                createdAt: new Date(),
+              },
+            })
             .returning()
             .then((rows) => rows[0]!),
         catch: (e) => DbError.make("previred.save", e),

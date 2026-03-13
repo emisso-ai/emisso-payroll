@@ -35,7 +35,7 @@ function compilePattern(pattern: string): {
         paramNames.push(segment.slice(1));
         return "([^/]+)";
       }
-      return segment;
+      return segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     })
     .join("/");
   return { regex: new RegExp(`^${regexStr}$`), paramNames };

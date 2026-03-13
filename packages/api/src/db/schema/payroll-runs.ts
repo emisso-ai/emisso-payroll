@@ -14,6 +14,7 @@ import { payrollSchema, tenants } from "./tenants";
  */
 export const payrollRunStatusEnum = payrollSchema.enum("payroll_run_status", [
   "draft",
+  "calculating",
   "calculated",
   "approved",
   "paid",

@@ -13,7 +13,7 @@ import {
   type Earning,
   type Deduction,
 } from "../db/schema/index.js";
-import { DbError, ConflictError } from "../core/effect/app-error.js";
+import { DbError, ConflictError, NotFoundError, ValidationError } from "../core/effect/app-error.js";
 import { queryOneOrFail } from "../core/effect/repo-helpers.js";
 
 export function createPayrollRepo(db: PgDatabase<any>) {
@@ -68,7 +68,7 @@ export function createPayrollRepo(db: PgDatabase<any>) {
       return Effect.tryPromise({
         try: () => {
           const conditions = [eq(payrollRuns.tenantId, tenantId)];
-          if (filters?.year) {
+          if (filters?.year !== undefined) {
             conditions.push(eq(payrollRuns.periodYear, filters.year));
           }
           if (filters?.status) {
@@ -85,13 +85,71 @@ export function createPayrollRepo(db: PgDatabase<any>) {
       });
     },
 
+    /**
+     * Atomically transition a run from `fromStatus` to `toStatus`.
+     * Returns the updated run, or fails with ValidationError if the
+     * current status doesn't match (TOCTOU-safe).
+     */
+    claimRun(
+      tenantId: string,
+      runId: string,
+      fromStatus: PayrollRun["status"],
+      toStatus: PayrollRun["status"],
+      extraData?: Partial<Omit<NewPayrollRun, "id" | "tenantId" | "createdAt">>,
+    ): Effect.Effect<PayrollRun, DbError | NotFoundError | ValidationError> {
+      return Effect.tryPromise({
+        try: () =>
+          db
+            .update(payrollRuns)
+            .set({ ...extraData, status: toStatus, updatedAt: new Date() })
+            .where(
+              and(
+                eq(payrollRuns.id, runId),
+                eq(payrollRuns.tenantId, tenantId),
+                eq(payrollRuns.status, fromStatus),
+              ),
+            )
+            .returning()
+            .then((rows) => rows[0]),
+        catch: (e) => DbError.make("payrollRun.claimRun", e),
+      }).pipe(
+        Effect.flatMap((row) => {
+          if (!row) {
+            // Row not updated — either doesn't exist or wrong status
+            return queryOneOrFail("payrollRun.claimRun", "PayrollRun", runId, () =>
+              db
+                .select()
+                .from(payrollRuns)
+                .where(
+                  and(
+                    eq(payrollRuns.id, runId),
+                    eq(payrollRuns.tenantId, tenantId),
+                  ),
+                )
+                .then((rows) => rows[0]),
+            ).pipe(
+              Effect.flatMap((existing) =>
+                Effect.fail(
+                  ValidationError.make(
+                    `Cannot transition run from '${existing.status}' to '${toStatus}', must be '${fromStatus}'`,
+                    "status",
+                  ),
+                ),
+              ),
+            );
+          }
+          return Effect.succeed(row);
+        }),
+      );
+    },
+
     updateRun(
       tenantId: string,
       runId: string,
       data: Partial<
         Omit<NewPayrollRun, "id" | "tenantId" | "createdAt">
       >,
-    ): Effect.Effect<PayrollRun, DbError> {
+    ): Effect.Effect<PayrollRun, DbError | NotFoundError> {
       return Effect.tryPromise({
         try: () =>
           db
@@ -104,9 +162,15 @@ export function createPayrollRepo(db: PgDatabase<any>) {
               ),
             )
             .returning()
-            .then((rows) => rows[0]!),
+            .then((rows) => rows[0]),
         catch: (e) => DbError.make("payrollRun.update", e),
-      });
+      }).pipe(
+        Effect.flatMap((row) =>
+          row
+            ? Effect.succeed(row)
+            : Effect.fail(NotFoundError.make("PayrollRun", runId)),
+        ),
+      );
     },
 
     upsertResults(

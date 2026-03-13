@@ -76,7 +76,7 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 DO $$ BEGIN
-  CREATE TYPE payroll.payroll_run_status AS ENUM ('draft', 'calculated', 'approved', 'paid', 'voided');
+  CREATE TYPE payroll.payroll_run_status AS ENUM ('draft', 'calculating', 'calculated', 'approved', 'paid', 'voided');
 EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 DO $$ BEGIN
@@ -282,7 +282,8 @@ CREATE TABLE IF NOT EXISTS payroll.previred_files (
   tenant_id UUID NOT NULL REFERENCES payroll.tenants(id) ON DELETE CASCADE,
   payroll_run_id UUID NOT NULL REFERENCES payroll.payroll_runs(id) ON DELETE CASCADE,
   file_content TEXT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT now()
+  created_at TIMESTAMP NOT NULL DEFAULT now(),
+  UNIQUE(tenant_id, payroll_run_id)
 );
 CREATE INDEX IF NOT EXISTS pr_previred_files_tenant_run_idx ON payroll.previred_files(tenant_id, payroll_run_id);
 `;

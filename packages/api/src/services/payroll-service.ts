@@ -26,16 +26,8 @@ export function createPayrollService(deps: {
       runId: string,
     ): Effect.Effect<PayrollRun, AppError> {
       return Effect.gen(function* () {
-        // 1. Get and validate run
-        const run = yield* payrollRepo.getRunById(tenantId, runId);
-        if (run.status !== "draft") {
-          return yield* Effect.fail(
-            ValidationError.make(
-              `Cannot calculate run in '${run.status}' status, must be 'draft'`,
-              "status",
-            ),
-          );
-        }
+        // 1. Atomically claim the run (prevents TOCTOU race)
+        const run = yield* payrollRepo.claimRun(tenantId, runId, "draft", "calculating");
 
         // 2. Fetch independent data in parallel
         const [activeEmployees, config, allEarnings, allDeductions] =
@@ -50,6 +42,8 @@ export function createPayrollService(deps: {
           );
 
         if (activeEmployees.length === 0) {
+          // Revert status back to draft since we claimed it
+          yield* payrollRepo.updateRun(tenantId, runId, { status: "draft" });
           return yield* Effect.fail(
             ValidationError.make("No active employees found for calculation"),
           );
@@ -88,7 +82,15 @@ export function createPayrollService(deps: {
             ),
         });
 
-        // 6. Save results
+        // 6. Guard against empty results
+        if (results.length === 0) {
+          yield* payrollRepo.updateRun(tenantId, runId, { status: "draft" });
+          return yield* Effect.fail(
+            ValidationError.make("Engine returned no results for active employees"),
+          );
+        }
+
+        // 7. Save results
         yield* payrollRepo.upsertResults(
           tenantId,
           runId,
@@ -98,7 +100,7 @@ export function createPayrollService(deps: {
           })),
         );
 
-        // 7. Update run totals + status (single pass)
+        // 8. Update run totals + status (single pass)
         let totalGrossPay = 0;
         let totalDeductions = 0;
         let totalNetPay = 0;
@@ -125,17 +127,8 @@ export function createPayrollService(deps: {
       runId: string,
     ): Effect.Effect<PayrollRun, AppError> {
       return Effect.gen(function* () {
-        const run = yield* payrollRepo.getRunById(tenantId, runId);
-        if (run.status !== "calculated") {
-          return yield* Effect.fail(
-            ValidationError.make(
-              `Cannot approve run in '${run.status}' status, must be 'calculated'`,
-              "status",
-            ),
-          );
-        }
-        return yield* payrollRepo.updateRun(tenantId, runId, {
-          status: "approved",
+        // Atomically claim: calculated → approved
+        return yield* payrollRepo.claimRun(tenantId, runId, "calculated", "approved", {
           approvedAt: new Date(),
         });
       });
@@ -150,6 +143,14 @@ export function createPayrollService(deps: {
         if (run.status === "voided") {
           return yield* Effect.fail(
             ValidationError.make("Run is already voided", "status"),
+          );
+        }
+        if (run.status === "paid") {
+          return yield* Effect.fail(
+            ValidationError.make(
+              "Cannot void a paid run — use a reversal workflow instead",
+              "status",
+            ),
           );
         }
         return yield* payrollRepo.updateRun(tenantId, runId, {

@@ -2,7 +2,7 @@ import { Effect } from "effect";
 import { and, eq } from "drizzle-orm";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import { employees, type Employee, type NewEmployee } from "../db/schema/index.js";
-import { DbError } from "../core/effect/app-error.js";
+import { DbError, ConflictError } from "../core/effect/app-error.js";
 import { queryOneOrFail } from "../core/effect/repo-helpers.js";
 
 export function createEmployeeRepo(db: PgDatabase<any>) {
@@ -47,7 +47,7 @@ export function createEmployeeRepo(db: PgDatabase<any>) {
     create(
       tenantId: string,
       data: Omit<NewEmployee, "id" | "tenantId" | "createdAt" | "updatedAt">,
-    ): Effect.Effect<Employee, DbError> {
+    ): Effect.Effect<Employee, DbError | ConflictError> {
       return Effect.tryPromise({
         try: () =>
           db
@@ -55,7 +55,17 @@ export function createEmployeeRepo(db: PgDatabase<any>) {
             .values({ ...data, tenantId })
             .returning()
             .then((rows) => rows[0]!),
-        catch: (e) => DbError.make("employee.create", e),
+        catch: (e) => {
+          const msg = e instanceof Error ? e.message : String(e);
+          if (msg.includes("unique") || msg.includes("duplicate")) {
+            return ConflictError.make(
+              `Employee with RUT '${data.rut}' already exists`,
+              "Employee",
+              data.rut,
+            );
+          }
+          return DbError.make("employee.create", e);
+        },
       });
     },
 

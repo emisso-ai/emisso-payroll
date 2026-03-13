@@ -79,8 +79,21 @@ export function createPreviredService(deps: {
           );
         }
 
-        // 5. Build PreviredFileData
-        const companyRut = parseRut(tenant.rut);
+        // 5. Parse company RUT safely
+        const companyRut = yield* Effect.try({
+          try: () => parseRut(tenant.rut!),
+          catch: () => ValidationError.make("Invalid tenant RUT format", "rut"),
+        });
+
+        // 6. Build PreviredFileData
+        const previredEmployees: PreviredEmployee[] = [];
+        for (const r of results) {
+          const emp = employeeMap.get(r.employeeId)!;
+          previredEmployees.push(
+            yield* mapResultToPreviredEmployee(emp, r.resultJson),
+          );
+        }
+
         const previredData: PreviredFileData = {
           company: {
             rut: String(companyRut.number),
@@ -89,15 +102,13 @@ export function createPreviredService(deps: {
             periodYear: run.periodYear,
             periodMonth: run.periodMonth,
           },
-          employees: results.map((r) =>
-            mapResultToPreviredEmployee(employeeMap.get(r.employeeId)!, r.resultJson),
-          ),
+          employees: previredEmployees,
         };
 
-        // 6. Generate file
+        // 7. Generate file
         const fileContent = generatePreviredFile(previredData);
 
-        // 7. Save to repo
+        // 8. Save to repo (upsert replaces previous file for this run)
         return yield* previredRepo.save(tenantId, runId, fileContent);
       });
     },
@@ -107,38 +118,54 @@ export function createPreviredService(deps: {
 function mapResultToPreviredEmployee(
   emp: Employee,
   result: CalculationResult,
-): PreviredEmployee {
-  const rutParsed = parseRut(emp.rut);
-  const nameParts = emp.lastName.split(" ");
+): Effect.Effect<PreviredEmployee, ValidationError> {
+  return Effect.gen(function* () {
+    const rutParsed = yield* Effect.try({
+      try: () => parseRut(emp.rut),
+      catch: () => ValidationError.make(`Invalid RUT format for employee ${emp.id}`, "rut"),
+    });
 
-  return {
-    rut: String(rutParsed.number),
-    rutDv: rutParsed.verifier,
-    firstName: emp.firstName,
-    firstLastName: nameParts[0] ?? emp.lastName,
-    secondLastName: nameParts[1] ?? "",
-    daysWorked: 30,
-    baseSalary: result.earnings.baseSalary,
-    gratification: result.earnings.gratification,
-    otherImponible: result.earnings.bonuses + result.earnings.allowances + result.earnings.other,
-    extraHours: result.earnings.overtime,
-    nonTaxableAllowances: result.earnings.totalNonTaxable,
-    totalImponibleAfp: result.earnings.totalImponible,
-    totalImponibleHealth: result.earnings.totalImponible,
-    totalTaxable: result.earnings.totalTaxable,
-    afpCode: emp.afpCode,
-    afpWorkerAmount: result.deductions.afp,
-    sisAmount: 0, // SIS is employer cost
-    apvAmount: result.deductions.apv,
-    healthCode: emp.healthPlan === "fonasa" ? "07" : (emp.isapreCode ?? "07"),
-    healthWorkerAmount: result.deductions.health,
-    unemploymentWorker: result.deductions.unemployment,
-    unemploymentEmployer: result.employerCosts.unemployment,
-    incomeTax: result.deductions.incomeTax,
-    netPay: result.netPay,
-    mutualAmount: result.employerCosts.mutual,
-    pensionReform: result.employerCosts.pensionReform,
-  };
+    // Validate ISAPRE employees have a health code
+    if (emp.healthPlan === "isapre" && !emp.isapreCode) {
+      return yield* Effect.fail(
+        ValidationError.make(
+          `Employee ${emp.firstName} ${emp.lastName} (${emp.rut}) has healthPlan 'isapre' but no isapreCode`,
+          "isapreCode",
+        ),
+      );
+    }
+
+    const nameParts = emp.lastName.split(" ");
+
+    return {
+      rut: String(rutParsed.number),
+      rutDv: rutParsed.verifier,
+      firstName: emp.firstName,
+      firstLastName: nameParts[0] ?? emp.lastName,
+      secondLastName: nameParts[1] ?? "",
+      daysWorked: 30,
+      baseSalary: result.earnings.baseSalary,
+      gratification: result.earnings.gratification,
+      otherImponible: result.earnings.bonuses + result.earnings.allowances + result.earnings.other,
+      extraHours: result.earnings.overtime,
+      nonTaxableAllowances: result.earnings.totalNonTaxable,
+      totalImponibleAfp: result.earnings.totalImponible,
+      totalImponibleHealth: result.earnings.totalImponible,
+      totalTaxable: result.earnings.totalTaxable,
+      afpCode: emp.afpCode,
+      afpWorkerAmount: result.deductions.afp,
+      sisAmount: 0, // SIS is employer cost
+      apvAmount: result.deductions.apv,
+      healthCode: emp.healthPlan === "fonasa" ? "07" : emp.isapreCode!,
+      healthWorkerAmount: result.deductions.health,
+      unemploymentWorker: result.deductions.unemployment,
+      unemploymentEmployer: result.employerCosts.unemployment,
+      incomeTax: result.deductions.incomeTax,
+      netPay: result.netPay,
+      mutualAmount: result.employerCosts.mutual,
+      pensionReform: result.employerCosts.pensionReform,
+    };
+  });
 }
 
 export type PreviredService = ReturnType<typeof createPreviredService>;

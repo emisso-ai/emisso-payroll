@@ -10,6 +10,15 @@ import {
   handleEffect,
 } from "../core/effect/http-response.js";
 
+const VALID_RUN_STATUSES = new Set([
+  "draft",
+  "calculating",
+  "calculated",
+  "approved",
+  "paid",
+  "voided",
+]);
+
 export function createPayrollHandlers(deps: {
   payrollService: PayrollService;
   payrollRepo: PayrollRepo;
@@ -18,11 +27,35 @@ export function createPayrollHandlers(deps: {
 
   const listPayrollRuns: HandlerFn = (_req, ctx) => {
     const url = new URL(_req.url);
-    const year = url.searchParams.get("year");
-    const status = url.searchParams.get("status");
+    const yearParam = url.searchParams.get("year");
+    const statusParam = url.searchParams.get("status");
+
+    // Validate year
+    let year: number | undefined;
+    if (yearParam !== null) {
+      year = Number(yearParam);
+      if (!Number.isInteger(year) || year < 2020 || year > 2100) {
+        return handleEffect(
+          Effect.fail(ValidationError.make("year must be an integer between 2020 and 2100", "year")),
+        );
+      }
+    }
+
+    // Validate status
+    if (statusParam !== null && !VALID_RUN_STATUSES.has(statusParam)) {
+      return handleEffect(
+        Effect.fail(
+          ValidationError.make(
+            `Invalid status '${statusParam}', must be one of: ${[...VALID_RUN_STATUSES].join(", ")}`,
+            "status",
+          ),
+        ),
+      );
+    }
+
     const filters = {
-      ...(year ? { year: Number(year) } : {}),
-      ...(status ? { status } : {}),
+      ...(year !== undefined ? { year } : {}),
+      ...(statusParam ? { status: statusParam } : {}),
     };
     return handleEffect(payrollRepo.listRuns(ctx.tenantId, filters));
   };

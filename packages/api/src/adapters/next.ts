@@ -33,15 +33,30 @@ export interface PayrollRouterConfig {
   /** Base path for the API routes (e.g., "/api/payroll") */
   basePath: string;
   /**
-   * Custom tenant ID resolver. Defaults to reading `X-Tenant-Id` header.
-   * Return null to reject the request.
+   * Custom tenant ID resolver. Return null to reject the request with 403.
+   *
+   * **SECURITY WARNING:** The default reads `X-Tenant-Id` from the request
+   * header without any authentication — this is ONLY suitable for local
+   * development. In production, you MUST provide an authenticated resolver
+   * (e.g., extract tenant from a verified JWT or session).
    */
   resolveTenantId?: (req: Request) => string | null | Promise<string | null>;
 }
 
-export function createPayrollRouter(config: PayrollRouterConfig) {
-  const sql = postgres(config.databaseUrl);
+// Cache connection pool per databaseUrl to prevent leaks in Next.js dev HMR
+const poolCache = new Map<string, PostgresJsDatabase>();
+
+function getOrCreateDb(databaseUrl: string): PostgresJsDatabase {
+  const cached = poolCache.get(databaseUrl);
+  if (cached) return cached;
+  const sql = postgres(databaseUrl);
   const db: PostgresJsDatabase = drizzle(sql);
+  poolCache.set(databaseUrl, db);
+  return db;
+}
+
+export function createPayrollRouter(config: PayrollRouterConfig) {
+  const db = getOrCreateDb(config.databaseUrl);
 
   // Build repos
   const tenantRepo = createTenantRepo(db as any);
@@ -108,7 +123,16 @@ export function createPayrollRouter(config: PayrollRouterConfig) {
     ((req: Request) => req.headers.get("X-Tenant-Id"));
 
   async function handle(req: Request): Promise<Response> {
-    const tenantId = await resolveTenantId(req);
+    let tenantId: string | null;
+    try {
+      tenantId = await resolveTenantId(req);
+    } catch (e) {
+      console.error("[payroll-api] resolveTenantId threw:", e);
+      return Response.json(
+        { error: { _type: "ForbiddenError", message: "Authentication failed" } },
+        { status: 403 },
+      );
+    }
     if (!tenantId) {
       return Response.json(
         { error: { _type: "ForbiddenError", message: "Missing tenant ID" } },

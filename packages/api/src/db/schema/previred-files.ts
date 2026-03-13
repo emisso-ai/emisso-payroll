@@ -1,4 +1,4 @@
-import { index, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { index, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { payrollSchema, tenants } from "./tenants";
 import { payrollRuns } from "./payroll-runs";
 
@@ -26,6 +26,10 @@ export const previredFiles = payrollSchema.table(
   },
   (table) => ({
     tenantRunIdx: index("pr_previred_files_tenant_run_idx").on(
+      table.tenantId,
+      table.payrollRunId,
+    ),
+    uniqueTenantRun: unique("pr_previred_files_tenant_run_unq").on(
       table.tenantId,
       table.payrollRunId,
     ),
