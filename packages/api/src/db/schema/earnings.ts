@@ -1,7 +1,7 @@
 import {
   boolean,
+  index,
   integer,
-  pgEnum,
   timestamp,
   uuid,
   varchar,
@@ -26,28 +26,38 @@ export const earningTypeEnum = payrollSchema.enum("earning_type", [
  * Variable earnings per employee per payroll run.
  * Base salary comes from employee record — these are additional compensation items.
  */
-export const earnings = payrollSchema.table("earnings", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  tenantId: uuid("tenant_id")
-    .notNull()
-    .references(() => tenants.id, { onDelete: "cascade" }),
-  payrollRunId: uuid("payroll_run_id")
-    .notNull()
-    .references(() => payrollRuns.id, { onDelete: "cascade" }),
-  employeeId: uuid("employee_id")
-    .notNull()
-    .references(() => employees.id, { onDelete: "cascade" }),
+export const earnings = payrollSchema.table(
+  "earnings",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    payrollRunId: uuid("payroll_run_id")
+      .notNull()
+      .references(() => payrollRuns.id, { onDelete: "cascade" }),
+    employeeId: uuid("employee_id")
+      .notNull()
+      .references(() => employees.id, { onDelete: "cascade" }),
 
-  type: earningTypeEnum("type").notNull(),
-  description: varchar("description", { length: 255 }).notNull(),
-  amount: integer("amount").notNull(), // CLP
+    type: earningTypeEnum("type").notNull(),
+    description: varchar("description", { length: 255 }).notNull(),
+    amount: integer("amount").notNull(), // CLP
 
-  isTaxable: boolean("is_taxable").notNull().default(true),
-  isImponible: boolean("is_imponible").notNull().default(true),
+    isTaxable: boolean("is_taxable").notNull().default(true),
+    isImponible: boolean("is_imponible").notNull().default(true),
 
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    tenantRunEmployeeIdx: index("pr_earnings_tenant_run_employee_idx").on(
+      table.tenantId,
+      table.payrollRunId,
+      table.employeeId,
+    ),
+  }),
+);
 
 export type Earning = typeof earnings.$inferSelect;
 export type NewEarning = typeof earnings.$inferInsert;

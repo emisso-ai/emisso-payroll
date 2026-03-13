@@ -3,7 +3,6 @@ import {
   index,
   integer,
   numeric,
-  pgEnum,
   timestamp,
   unique,
   uuid,
@@ -28,11 +27,7 @@ export const referenceIndicators = payrollSchema.table(
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
-  (table) => ({
-    effectiveDateIdx: index("pr_ref_indicators_effective_date_idx").on(
-      table.effectiveDate,
-    ),
-  }),
+  // effectiveDate already has a unique constraint which provides index coverage
 );
 
 export type ReferenceIndicator = typeof referenceIndicators.$inferSelect;

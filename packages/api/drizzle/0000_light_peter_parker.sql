@@ -61,7 +61,7 @@ CREATE TABLE "payroll"."employees" (
 	"gratification_amount" integer DEFAULT 0,
 	"colacion" integer DEFAULT 0,
 	"movilizacion" integer DEFAULT 0,
-	"afp_code" varchar(10) NOT NULL,
+	"afp_code" "payroll"."afp_provider" NOT NULL,
 	"afp_fund" "payroll"."afp_fund_type" DEFAULT 'c' NOT NULL,
 	"health_plan" "payroll"."health_plan_type" DEFAULT 'fonasa' NOT NULL,
 	"isapre_code" varchar(10),
@@ -72,7 +72,8 @@ CREATE TABLE "payroll"."employees" (
 	"family_allowance_loads" integer DEFAULT 0 NOT NULL,
 	"is_active" boolean DEFAULT true NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "pr_employees_tenant_rut_unq" UNIQUE("tenant_id","rut")
 );
 --> statement-breakpoint
 CREATE TABLE "payroll"."payroll_results" (
@@ -81,7 +82,8 @@ CREATE TABLE "payroll"."payroll_results" (
 	"payroll_run_id" uuid NOT NULL,
 	"employee_id" uuid NOT NULL,
 	"result_json" jsonb NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "pr_payroll_results_run_employee_unq" UNIQUE("payroll_run_id","employee_id")
 );
 --> statement-breakpoint
 CREATE TABLE "payroll"."payroll_runs" (
@@ -103,7 +105,8 @@ CREATE TABLE "payroll"."payroll_runs" (
 	"paid_at" timestamp,
 	"voided_at" timestamp,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "pr_payroll_runs_tenant_period_unq" UNIQUE("tenant_id","period_year","period_month")
 );
 --> statement-breakpoint
 CREATE TABLE "payroll"."previred_files" (
@@ -111,7 +114,6 @@ CREATE TABLE "payroll"."previred_files" (
 	"tenant_id" uuid NOT NULL,
 	"payroll_run_id" uuid NOT NULL,
 	"file_content" text NOT NULL,
-	"generated_at" timestamp DEFAULT now() NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -198,7 +200,12 @@ ALTER TABLE "payroll"."payroll_results" ADD CONSTRAINT "payroll_results_employee
 ALTER TABLE "payroll"."payroll_runs" ADD CONSTRAINT "payroll_runs_tenant_id_tenants_id_fk" FOREIGN KEY ("tenant_id") REFERENCES "payroll"."tenants"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payroll"."previred_files" ADD CONSTRAINT "previred_files_tenant_id_tenants_id_fk" FOREIGN KEY ("tenant_id") REFERENCES "payroll"."tenants"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payroll"."previred_files" ADD CONSTRAINT "previred_files_payroll_run_id_payroll_runs_id_fk" FOREIGN KEY ("payroll_run_id") REFERENCES "payroll"."payroll_runs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "pr_deductions_tenant_run_employee_idx" ON "payroll"."deductions" USING btree ("tenant_id","payroll_run_id","employee_id");--> statement-breakpoint
+CREATE INDEX "pr_earnings_tenant_run_employee_idx" ON "payroll"."earnings" USING btree ("tenant_id","payroll_run_id","employee_id");--> statement-breakpoint
+CREATE INDEX "pr_employees_tenant_active_idx" ON "payroll"."employees" USING btree ("tenant_id","is_active");--> statement-breakpoint
+CREATE INDEX "pr_payroll_results_tenant_run_idx" ON "payroll"."payroll_results" USING btree ("tenant_id","payroll_run_id");--> statement-breakpoint
+CREATE INDEX "pr_payroll_runs_tenant_period_idx" ON "payroll"."payroll_runs" USING btree ("tenant_id","period_year","period_month");--> statement-breakpoint
+CREATE INDEX "pr_previred_files_tenant_run_idx" ON "payroll"."previred_files" USING btree ("tenant_id","payroll_run_id");--> statement-breakpoint
 CREATE INDEX "pr_ref_afp_rates_effective_date_idx" ON "payroll"."reference_afp_rates" USING btree ("effective_date");--> statement-breakpoint
 CREATE INDEX "pr_ref_family_allow_effective_date_idx" ON "payroll"."reference_family_allowance" USING btree ("effective_date");--> statement-breakpoint
-CREATE INDEX "pr_ref_indicators_effective_date_idx" ON "payroll"."reference_indicators" USING btree ("effective_date");--> statement-breakpoint
 CREATE INDEX "pr_ref_tax_brackets_effective_date_idx" ON "payroll"."reference_tax_brackets" USING btree ("effective_date");

@@ -1,7 +1,6 @@
 import {
   boolean,
   jsonb,
-  pgEnum,
   pgSchema,
   timestamp,
   uuid,

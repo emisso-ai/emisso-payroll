@@ -11,11 +11,6 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
-    },
-    "./next": {
-      "types": "./dist/adapters/next.d.ts",
-      "import": "./dist/adapters/next.mjs",
-      "require": "./dist/adapters/next.js"
     }
   },
   "files": [

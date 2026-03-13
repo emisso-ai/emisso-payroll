@@ -1,5 +1,5 @@
 {
-  "id": "3f819ed2-9482-435e-ab87-061bc9bd43be",
+  "id": "cf9a62e4-ecb5-41d1-9014-ce859bf9d7d9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -67,7 +67,35 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "pr_deductions_tenant_run_employee_idx": {
+          "name": "pr_deductions_tenant_run_employee_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "payroll_run_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "employee_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "deductions_tenant_id_tenants_id_fk": {
           "name": "deductions_tenant_id_tenants_id_fk",
@@ -195,7 +223,35 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "pr_earnings_tenant_run_employee_idx": {
+          "name": "pr_earnings_tenant_run_employee_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "payroll_run_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "employee_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "earnings_tenant_id_tenants_id_fk": {
           "name": "earnings_tenant_id_tenants_id_fk",
@@ -405,7 +461,8 @@
         },
         "afp_code": {
           "name": "afp_code",
-          "type": "varchar(10)",
+          "type": "afp_provider",
+          "typeSchema": "payroll",
           "primaryKey": false,
           "notNull": true
         },
@@ -487,7 +544,29 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "pr_employees_tenant_active_idx": {
+          "name": "pr_employees_tenant_active_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "is_active",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "employees_tenant_id_tenants_id_fk": {
           "name": "employees_tenant_id_tenants_id_fk",
@@ -505,7 +584,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "pr_employees_tenant_rut_unq": {
+          "name": "pr_employees_tenant_rut_unq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tenant_id",
+            "rut"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -553,7 +641,29 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "pr_payroll_results_tenant_run_idx": {
+          "name": "pr_payroll_results_tenant_run_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "payroll_run_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "payroll_results_tenant_id_tenants_id_fk": {
           "name": "payroll_results_tenant_id_tenants_id_fk",
@@ -599,7 +709,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "pr_payroll_results_run_employee_unq": {
+          "name": "pr_payroll_results_run_employee_unq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "payroll_run_id",
+            "employee_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -732,7 +851,35 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "pr_payroll_runs_tenant_period_idx": {
+          "name": "pr_payroll_runs_tenant_period_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "period_year",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "period_month",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "payroll_runs_tenant_id_tenants_id_fk": {
           "name": "payroll_runs_tenant_id_tenants_id_fk",
@@ -750,7 +897,17 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "pr_payroll_runs_tenant_period_unq": {
+          "name": "pr_payroll_runs_tenant_period_unq",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tenant_id",
+            "period_year",
+            "period_month"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -784,13 +941,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "generated_at": {
-          "name": "generated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -799,7 +949,29 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "pr_previred_files_tenant_run_idx": {
+          "name": "pr_previred_files_tenant_run_idx",
+          "columns": [
+            {
+              "expression": "tenant_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "payroll_run_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "previred_files_tenant_id_tenants_id_fk": {
           "name": "previred_files_tenant_id_tenants_id_fk",
@@ -1072,23 +1244,7 @@
           "default": "now()"
         }
       },
-      "indexes": {
-        "pr_ref_indicators_effective_date_idx": {
-          "name": "pr_ref_indicators_effective_date_idx",
-          "columns": [
-            {
-              "expression": "effective_date",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {

@@ -196,7 +196,52 @@ describe("payroll schema", () => {
       expect(colNames).toContain("tenant_id");
       expect(colNames).toContain("payroll_run_id");
       expect(colNames).toContain("file_content");
-      expect(colNames).toContain("generated_at");
+    });
+  });
+
+  describe("indexes and unique constraints", () => {
+    it("employees has unique constraint on (tenant_id, rut)", () => {
+      const config = getTableConfig(employees);
+      const uniqueConstraints = config.uniqueConstraints;
+      const tenantRut = uniqueConstraints.find(
+        (u) => u.name === "pr_employees_tenant_rut_unq",
+      );
+      expect(tenantRut).toBeDefined();
+    });
+
+    it("payroll_runs has unique constraint on (tenant_id, year, month)", () => {
+      const config = getTableConfig(payrollRuns);
+      const uniqueConstraints = config.uniqueConstraints;
+      const tenantPeriod = uniqueConstraints.find(
+        (u) => u.name === "pr_payroll_runs_tenant_period_unq",
+      );
+      expect(tenantPeriod).toBeDefined();
+    });
+
+    it("payroll_results has unique constraint on (run_id, employee_id)", () => {
+      const config = getTableConfig(payrollResults);
+      const uniqueConstraints = config.uniqueConstraints;
+      const runEmployee = uniqueConstraints.find(
+        (u) => u.name === "pr_payroll_results_run_employee_unq",
+      );
+      expect(runEmployee).toBeDefined();
+    });
+
+    it("tenant-scoped tables have tenant_id indexes", () => {
+      const tablesWithIndexes = [
+        { table: employees, indexName: "pr_employees_tenant_active_idx" },
+        { table: payrollRuns, indexName: "pr_payroll_runs_tenant_period_idx" },
+        { table: payrollResults, indexName: "pr_payroll_results_tenant_run_idx" },
+        { table: earnings, indexName: "pr_earnings_tenant_run_employee_idx" },
+        { table: deductions, indexName: "pr_deductions_tenant_run_employee_idx" },
+        { table: previredFiles, indexName: "pr_previred_files_tenant_run_idx" },
+      ];
+
+      for (const { table, indexName } of tablesWithIndexes) {
+        const config = getTableConfig(table);
+        const idx = config.indexes.find((i) => i.config.name === indexName);
+        expect(idx, `Missing index ${indexName}`).toBeDefined();
+      }
     });
   });
 
