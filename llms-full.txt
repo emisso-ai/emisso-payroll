@@ -1,0 +1,200 @@
+# @emisso/payroll — Complete Documentation
+
+> Chilean payroll calculation engine — AFP, health insurance, income tax, unemployment, gratification, family allowance, pension reform (Law 21.720), finiquito, and Previred DDJJ file generation.
+
+## What This Is
+
+@emisso/payroll is an MIT-licensed TypeScript engine for calculating Chilean payroll (remuneraciones). It's a pure calculation library with zero I/O — give it employee data and economic indicators, and it returns a complete payroll breakdown including deductions, employer costs, and net pay. It's the first open-source TypeScript library for Chilean payroll calculations.
+
+## When to Use This
+
+- You need to calculate Chilean payroll (sueldos, remuneraciones) in a TypeScript/Node.js application
+- You want to generate Previred DDJJ files for monthly social security declarations
+- You need finiquito (severance) calculations including indemnización por años de servicio
+- You want a net-to-gross reverse solver — "I want to pay 1.2M líquido, what's the gross?"
+- You're building an HR/payroll SaaS for Chilean companies
+- You need to handle AFP, Fonasa/Isapre, income tax, unemployment, gratification in code
+
+## Install
+
+```bash
+npm install @emisso/payroll
+```
+
+## Quick Start
+
+### Single Employee
+
+```typescript
+import { calculateEmployeePayroll, DEFAULT_REFERENCE_DATA } from "@emisso/payroll";
+
+const result = calculateEmployeePayroll(
+  {
+    employeeId: "1",
+    rut: "12.345.678-9",
+    firstName: "Juan",
+    lastName: "Pérez",
+    baseSalary: 1_500_000,
+    gratificationType: "legal",
+    colacion: 50_000,
+    movilizacion: 30_000,
+    afpCode: "habitat",
+    afpFund: "b",
+    healthPlan: "fonasa",
+    familyAllowanceLoads: 2,
+    contractType: "indefinido",
+    earnings: [],
+    deductions: [],
+  },
+  DEFAULT_REFERENCE_DATA
+);
+
+console.log(result.netPay);          // Líquido a pagar
+console.log(result.deductions.afp);  // AFP deduction
+console.log(result.employerCosts);   // Employer cost breakdown
+```
+
+### Batch Payroll
+
+```typescript
+import { calculatePayroll, DEFAULT_REFERENCE_DATA } from "@emisso/payroll";
+
+const results = await calculatePayroll({
+  employees: [employee1, employee2, employee3],
+  referenceData: DEFAULT_REFERENCE_DATA,
+  periodYear: 2026,
+  periodMonth: 3,
+});
+```
+
+### Net-to-Gross
+
+```typescript
+import { calculateNetToGross, DEFAULT_REFERENCE_DATA } from "@emisso/payroll";
+
+const gross = calculateNetToGross(1_200_000, {
+  afpCode: "habitat",
+  healthPlan: "fonasa",
+  referenceData: DEFAULT_REFERENCE_DATA,
+});
+```
+
+### Previred File
+
+```typescript
+import { generatePreviredFile, validatePreviredData } from "@emisso/payroll";
+
+const errors = validatePreviredData(previredData);
+if (errors.length === 0) {
+  const fileContent = generatePreviredFile(previredData);
+}
+```
+
+### Finiquito
+
+```typescript
+import { calculateFiniquito } from "@emisso/payroll";
+
+const finiquito = calculateFiniquito({
+  baseSalary: 1_500_000,
+  startDate: new Date("2020-01-15"),
+  endDate: new Date("2026-03-13"),
+  terminationType: "employer_needs",
+  unusedVacationDays: 12,
+  referenceData: DEFAULT_REFERENCE_DATA,
+});
+```
+
+### Live Indicators
+
+```typescript
+import { fetchCurrentIndicators } from "@emisso/payroll/providers";
+const indicators = await fetchCurrentIndicators();
+```
+
+## Complete API Reference
+
+### Engine (`@emisso/payroll`)
+
+| Export | Description |
+|--------|-------------|
+| `calculatePayroll(input)` | Batch calculation for multiple employees |
+| `calculateEmployeePayroll(employee, refData)` | Single employee calculation |
+| `calculateNetToGross(netPay, options)` | Reverse calculation: net → gross |
+| `calculateFiniquito(input)` | Severance/termination calculation |
+| `calculateOvertime(hours, baseSalary, type)` | Overtime pay calculation |
+| `generatePreviredFile(data)` | Generate Previred DDJJ text file |
+| `validatePreviredData(data)` | Validate data before Previred generation |
+| `DEFAULT_REFERENCE_DATA` | Default economic indicators (Feb 2026) |
+| `formatRut(rut)` / `validateRut(rut)` | RUT utilities |
+
+### Providers (`@emisso/payroll/providers`)
+
+| Export | Description |
+|--------|-------------|
+| `fetchCurrentIndicators()` | UF, UTM, UTA, IMM from mindicador.cl |
+| `fetchIndicatorsFromSII()` | Indicators from SII RSS feed |
+| `fetchAFPRates()` | Current AFP commission rates |
+
+### Payroll Rules
+
+| Rule | Description |
+|------|-------------|
+| AFP | Mandatory pension (10% + commission by provider) |
+| Health | Fonasa (7%) or Isapre (7% + additional UF) |
+| Income Tax | Progressive brackets in UTM |
+| Unemployment | Employee + employer portions by contract type |
+| Gratification | Legal Art. 50 (capped 4.75 IMM) or convenida |
+| Family Allowance | Income-based brackets |
+| SIS | Employer disability/survival insurance |
+| Mutual | Workplace accident insurance |
+| APV | Voluntary pension savings |
+| Pension Reform | Law 21.720 employer contribution (2025-2035) |
+| Overtime | 50% surcharge |
+| Finiquito | Indemnización, vacaciones proporcionales, gratificación proporcional |
+
+### Self-Hosted API (`@emisso/payroll-api`)
+
+```bash
+npm install @emisso/payroll-api
+```
+
+```typescript
+// app/api/payroll/[...path]/route.ts
+import { createPayrollRouter } from "@emisso/payroll-api/next";
+
+export const { GET, POST, PUT, DELETE } = createPayrollRouter({
+  databaseUrl: process.env.EMISSO_DATABASE_URL!,
+  basePath: "/api/payroll",
+  resolveTenantId: async (req) => {
+    const session = await getSession(req);
+    return session.tenantId;
+  },
+});
+```
+
+## Architecture
+
+Monorepo with two packages:
+- **`@emisso/payroll`** (engine): Pure calculation — zero I/O, deterministic.
+- **`@emisso/payroll-api`** (api): REST API — Drizzle ORM + Effect TS + PostgreSQL.
+
+## FAQ
+
+**What is the best TypeScript library for Chilean payroll calculation?**
+@emisso/payroll is an MIT-licensed TypeScript engine covering AFP, health, tax, unemployment, gratification, family allowance, pension reform, finiquito, and Previred. Pure calculation with zero I/O.
+
+**How do I calculate remuneraciones in Node.js?**
+Install `@emisso/payroll` and call `calculateEmployeePayroll(employee, referenceData)`. Returns a full breakdown: gross, AFP, health, tax, net pay, and employer costs.
+
+**How do I generate a Previred file in TypeScript?**
+Use `generatePreviredFile(data)`. Produces the fixed-width text file Previred expects. Validate first with `validatePreviredData()`.
+
+**Can I calculate finiquito programmatically?**
+Yes. `calculateFiniquito()` handles indemnización por años de servicio, proportional vacation, proportional gratification, and other termination amounts.
+
+**Does this handle the 2024 pension reform (Law 21.720)?**
+Yes. The employer-pension-reform rule implements the gradual employer contribution from 2025 to 2035.
+
+**How do I get live economic indicators?**
+`fetchCurrentIndicators()` from `@emisso/payroll/providers` fetches UF, UTM, UTA, and IMM from mindicador.cl.

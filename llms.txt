@@ -1,0 +1,40 @@
+# @emisso/payroll
+
+> Chilean payroll calculation engine — AFP, health, tax, unemployment, Previred, finiquito.
+
+- Repo: https://github.com/emisso-ai/emisso-payroll
+- npm: https://www.npmjs.com/package/@emisso/payroll
+- License: MIT
+
+## Install
+
+npm install @emisso/payroll
+
+## Docs
+
+- [README](https://github.com/emisso-ai/emisso-payroll/blob/main/README.md)
+- [AGENTS.md](https://github.com/emisso-ai/emisso-payroll/blob/main/AGENTS.md)
+
+## Key Features
+
+- Calculate Chilean payroll: AFP, Fonasa/Isapre, income tax, unemployment, gratification
+- Net-to-gross reverse solver ("pay 1.2M líquido — what's the gross?")
+- Finiquito (severance) calculator with indemnización por años de servicio
+- Previred DDJJ file generation and validation
+- Pension reform Law 21.720 employer contribution
+- Family allowance, SIS, mutual, APV, overtime
+- Live indicator providers (UF, UTM, IMM from mindicador.cl)
+- Self-hosted REST API with multi-tenant support (@emisso/payroll-api)
+
+## API
+
+- `calculateEmployeePayroll(employee, refData)` — Single employee calculation
+- `calculatePayroll(input)` — Batch calculation for multiple employees
+- `calculateNetToGross(netPay, options)` — Reverse: net → gross
+- `calculateFiniquito(input)` — Severance/termination calculation
+- `calculateOvertime(hours, baseSalary, type)` — Overtime pay
+- `generatePreviredFile(data)` — Generate Previred DDJJ text file
+- `validatePreviredData(data)` — Validate before Previred generation
+- `DEFAULT_REFERENCE_DATA` — Default economic indicators (Feb 2026)
+- `fetchCurrentIndicators()` — Live UF, UTM, UTA, IMM (from providers)
+- `fetchAFPRates()` — Current AFP commission rates (from providers)

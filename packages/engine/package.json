@@ -3,19 +3,19 @@
   "version": "0.1.0",
   "description": "Chilean payroll calculation engine — AFP, health, tax, unemployment, Previred, and more",
   "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./providers": {
       "types": "./dist/providers.d.ts",
-      "import": "./dist/providers.mjs",
-      "require": "./dist/providers.js"
+      "import": "./dist/providers.js",
+      "require": "./dist/providers.cjs"
     }
   },
   "files": [
@@ -37,7 +37,23 @@
     "previred",
     "liquidacion",
     "impuestos",
-    "latam"
+    "latam",
+    "nomina",
+    "salary",
+    "sueldos",
+    "fonasa",
+    "isapre",
+    "finiquito",
+    "severance",
+    "seguro-cesantia",
+    "gratificacion",
+    "income-tax",
+    "impuesto-unico",
+    "utm",
+    "uf",
+    "typescript",
+    "sdk",
+    "latin-america"
   ],
   "author": "Emisso <hello@emisso.ai>",
   "license": "MIT",
