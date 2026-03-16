@@ -41,7 +41,7 @@ export const rutValidateCommand = Command.make(
       }, { format: resolvedFormat });
 
       if (!isValid) {
-        process.exitCode = 5;
+        process.exitCode = 1;
       }
     }),
 ).pipe(Command.withDescription("Validate a Chilean RUT using mod-11 algorithm"));

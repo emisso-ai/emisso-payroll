@@ -4,12 +4,10 @@
 
 import { Command } from "@effect/cli";
 import { Effect, Option } from "effect";
-import { z } from "zod";
 import {
   generatePreviredFile,
   validatePreviredData,
 } from "@emisso/payroll";
-import type { PreviredFileData } from "@emisso/payroll";
 import {
   OutputRenderer,
   CliError,
@@ -20,19 +18,8 @@ import {
   outputFileOption,
 } from "@emisso/cli-core";
 import { readJsonFile } from "../../input/file-reader.js";
+import { PreviredFileDataSchema } from "./schema.js";
 import { writeFileSync } from "node:fs";
-
-// Passthrough schema — we validate via validatePreviredData() after parsing
-const PreviredFileDataSchema = z.object({
-  company: z.object({
-    rut: z.string(),
-    rutDv: z.string(),
-    businessName: z.string(),
-    periodYear: z.number(),
-    periodMonth: z.number(),
-  }),
-  employees: z.array(z.any()),
-}).passthrough() as unknown as z.ZodType<PreviredFileData>;
 
 const options = {
   input: inputFileOption,
@@ -68,9 +55,17 @@ export const previredGenerateCommand = Command.make(
 
       const fileContent = generatePreviredFile(data);
 
-      const outputPath = Option.getOrUndefined(output) as string | undefined;
+      const outputPath = Option.getOrUndefined(output);
       if (outputPath) {
-        writeFileSync(outputPath, fileContent, "utf-8");
+        yield* Effect.try({
+          try: () => writeFileSync(outputPath, fileContent, "utf-8"),
+          catch: (error) =>
+            new CliError({
+              kind: "general",
+              message: `Failed to write file: ${outputPath}`,
+              detail: error instanceof Error ? error.message : String(error),
+            }),
+        });
         yield* renderer.renderSuccess({
           file: outputPath,
           employees: data.employees.length,

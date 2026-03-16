@@ -4,9 +4,7 @@
 
 import { Command } from "@effect/cli";
 import { Effect } from "effect";
-import { z } from "zod";
 import { validatePreviredData } from "@emisso/payroll";
-import type { PreviredFileData } from "@emisso/payroll";
 import {
   OutputRenderer,
   resolveFormat,
@@ -15,17 +13,7 @@ import {
   inputFileOption,
 } from "@emisso/cli-core";
 import { readJsonFile } from "../../input/file-reader.js";
-
-const PreviredFileDataSchema = z.object({
-  company: z.object({
-    rut: z.string(),
-    rutDv: z.string(),
-    businessName: z.string(),
-    periodYear: z.number(),
-    periodMonth: z.number(),
-  }),
-  employees: z.array(z.any()),
-}).passthrough() as unknown as z.ZodType<PreviredFileData>;
+import { PreviredFileDataSchema } from "./schema.js";
 
 const options = {
   input: inputFileOption,
@@ -66,7 +54,7 @@ export const previredValidateCommand = Command.make(
           ttyDefault: "table",
         }, { format: resolvedFormat });
 
-        process.exitCode = 5;
+        process.exitCode = 1;
       }
     }),
 ).pipe(

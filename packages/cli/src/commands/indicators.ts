@@ -49,15 +49,15 @@ export const indicatorsCommand = Command.make(
             ? providers.fetchCurrentIndicators
             : providers.fetchIndicatorsFromSII;
 
-        const result = yield* Effect.tryPromise({
-          try: () => Effect.runPromise(fetcher()),
-          catch: (error) =>
+        const result = yield* fetcher().pipe(
+          Effect.mapError((error) =>
             new CliError({
               kind: "general",
               message: `Failed to fetch indicators from ${source}`,
               detail: error instanceof Error ? error.message : String(error),
             }),
-        });
+          ),
+        );
 
         const rows = [
           { name: "UF", value: formatCLP(result.uf) },

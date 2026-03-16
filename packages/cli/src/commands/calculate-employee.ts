@@ -39,6 +39,10 @@ const movilizacionOpt = Options.integer("movilizacion").pipe(
   Options.withDefault(0),
   Options.withDescription("Transportation allowance in CLP (default: 0)"),
 );
+const afpFundOpt = Options.choice("afp-fund", ["a", "b", "c", "d", "e"]).pipe(
+  Options.withDefault("c" as const),
+  Options.withDescription("AFP fund type A-E (default: c)"),
+);
 const familyLoadsOpt = Options.integer("family-loads").pipe(
   Options.withDefault(0),
   Options.withDescription("Number of family allowance loads (default: 0)"),
@@ -51,6 +55,7 @@ const options = {
   gratification: gratificationOpt,
   colacion: colacionOpt,
   movilizacion: movilizacionOpt,
+  afpFund: afpFundOpt,
   familyLoads: familyLoadsOpt,
   format: formatOption,
   json: jsonFlag,
@@ -59,14 +64,14 @@ const options = {
 export const calculateEmployeeCommand = Command.make(
   "calculate-employee",
   options,
-  ({ baseSalary, afp, health, gratification, colacion, movilizacion, familyLoads, format, json }) =>
+  ({ baseSalary, afp, health, gratification, colacion, movilizacion, afpFund, familyLoads, format, json }) =>
     Effect.gen(function* () {
       const renderer = yield* OutputRenderer;
       const resolvedFormat = resolveFormat(format, json);
 
       const employee: EmployeePayrollInput = {
         employeeId: "cli-single",
-        rut: "0-0",
+        rut: "11111111-1",
         firstName: "CLI",
         lastName: "User",
         baseSalary,
@@ -74,7 +79,7 @@ export const calculateEmployeeCommand = Command.make(
         colacion,
         movilizacion,
         afpCode: afp,
-        afpFund: "c",
+        afpFund,
         healthPlan: health,
         familyAllowanceLoads: familyLoads,
         contractType: "indefinido",

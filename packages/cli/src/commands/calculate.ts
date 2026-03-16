@@ -55,8 +55,8 @@ export const calculateCommand = Command.make(
       const renderer = yield* OutputRenderer;
       const resolvedFormat = resolveFormat(format, json);
 
-      // Read input from file or stdin
-      const data = yield* readJsonFile(input, CalculationInputSchema) as Effect.Effect<CalculationInput, CliError>;
+      // Read input from file — Zod schema infers optional contractType but engine requires it
+      const data = (yield* readJsonFile(input, CalculationInputSchema)) as CalculationInput;
       const results = yield* Effect.tryPromise({
         try: () => calculatePayroll(data),
         catch: (error) =>
@@ -75,9 +75,17 @@ export const calculateCommand = Command.make(
       }, { format: resolvedFormat });
 
       // Write to file if -o specified
-      const outputPath = Option.getOrUndefined(output) as string | undefined;
+      const outputPath = Option.getOrUndefined(output);
       if (outputPath) {
-        writeFileSync(outputPath, rendered + "\n", "utf-8");
+        yield* Effect.try({
+          try: () => writeFileSync(outputPath, rendered + "\n", "utf-8"),
+          catch: (error) =>
+            new CliError({
+              kind: "general",
+              message: `Failed to write file: ${outputPath}`,
+              detail: error instanceof Error ? error.message : String(error),
+            }),
+        });
       }
     }),
 ).pipe(

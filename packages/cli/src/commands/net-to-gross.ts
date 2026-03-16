@@ -27,6 +27,10 @@ const afpOpt = Options.text("afp").pipe(
 const healthOpt = Options.choice("health", ["fonasa", "isapre"]).pipe(
   Options.withDescription("Health plan type"),
 );
+const afpFundOpt = Options.choice("afp-fund", ["a", "b", "c", "d", "e"]).pipe(
+  Options.withDefault("c" as const),
+  Options.withDescription("AFP fund type A-E (default: c)"),
+);
 const toleranceOpt = Options.integer("tolerance").pipe(
   Options.withDefault(1),
   Options.withDescription("CLP tolerance for convergence (default: 1)"),
@@ -36,6 +40,7 @@ const options = {
   targetNet: targetNetOpt,
   afp: afpOpt,
   health: healthOpt,
+  afpFund: afpFundOpt,
   tolerance: toleranceOpt,
   format: formatOption,
   json: jsonFlag,
@@ -44,13 +49,13 @@ const options = {
 export const netToGrossCommand = Command.make(
   "net-to-gross",
   options,
-  ({ targetNet, afp, health, tolerance, format, json }) =>
+  ({ targetNet, afp, health, afpFund, tolerance, format, json }) =>
     Effect.gen(function* () {
       const renderer = yield* OutputRenderer;
       const resolvedFormat = resolveFormat(format, json);
 
       const input: NetToGrossInput = {
-        rut: "0-0",
+        rut: "11111111-1",
         firstName: "CLI",
         lastName: "User",
         targetNetPay: targetNet,
@@ -58,7 +63,7 @@ export const netToGrossCommand = Command.make(
         colacion: 0,
         movilizacion: 0,
         afpCode: afp,
-        afpFund: "c",
+        afpFund,
         healthPlan: health,
         familyAllowanceLoads: 0,
         earnings: [],

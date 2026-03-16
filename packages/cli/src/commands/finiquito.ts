@@ -12,6 +12,7 @@ import {
 import type { TerminationType } from "@emisso/payroll";
 import {
   OutputRenderer,
+  CliError,
   resolveFormat,
   formatOption,
   jsonFlag,
@@ -58,6 +59,26 @@ export const finiquitoCommand = Command.make(
     Effect.gen(function* () {
       const renderer = yield* OutputRenderer;
       const resolvedFormat = resolveFormat(format, json);
+
+      // Validate date formats
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      for (const [label, value] of [["hire-date", hireDate], ["termination-date", terminationDate]] as const) {
+        if (!dateRegex.test(value)) {
+          return yield* Effect.fail(new CliError({
+            kind: "bad-args",
+            message: `Invalid date format for --${label}: ${value}`,
+            detail: "Expected YYYY-MM-DD (e.g. 2024-03-15)",
+          }));
+        }
+        const parsed = new Date(value);
+        if (isNaN(parsed.getTime())) {
+          return yield* Effect.fail(new CliError({
+            kind: "bad-args",
+            message: `Invalid date for --${label}: ${value}`,
+            detail: "The date does not represent a valid calendar date",
+          }));
+        }
+      }
 
       const result = calculateFiniquito({
         hireDateStr: hireDate,
