@@ -1,0 +1,59 @@
+{
+  "name": "@emisso/payroll-cli",
+  "version": "0.1.0",
+  "description": "CLI for Chilean payroll calculations — AFP, health, tax, Previred, and more",
+  "type": "module",
+  "main": "./dist/src/index.cjs",
+  "module": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "bin": {
+    "payroll": "./dist/bin/payroll.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js",
+      "require": "./dist/src/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest",
+    "test:run": "vitest --run",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "payroll", "chile", "cli", "remuneraciones", "afp", "previred",
+    "liquidacion", "impuestos", "finiquito", "typescript", "sdk"
+  ],
+  "author": "Emisso <hello@emisso.ai>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/emisso-ai/emisso-payroll",
+    "directory": "packages/cli"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@emisso/payroll": "workspace:*",
+    "@emisso/cli-core": "^0.1.0",
+    "effect": "^3.19.16",
+    "@effect/cli": "^0.73.0",
+    "@effect/platform": "^0.94.3",
+    "@effect/platform-node": "^0.104.0",
+    "@effect/printer": "^0.47.0",
+    "@effect/printer-ansi": "^0.47.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.3.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}

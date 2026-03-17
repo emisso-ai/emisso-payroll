@@ -2,6 +2,15 @@
 
 Chilean payroll calculation engine — AFP, health insurance, income tax, unemployment, gratification, family allowance, pension reform (Law 21.720), finiquito, and Previred DDJJ file generation.
 
+## When to Use This
+
+- You need to **calculate Chilean payroll** (sueldos, remuneraciones) in a TypeScript/Node.js application
+- You want to **generate Previred DDJJ files** for monthly social security declarations
+- You need **finiquito (severance) calculations** including indemnización por años de servicio and unused vacation
+- You want a **net-to-gross reverse solver** — "I want to pay 1.2M líquido, what's the gross?"
+- You're building an **HR/payroll SaaS** for Chilean companies and need a calculation engine with a self-hosted API
+- You need to handle **AFP, Fonasa/Isapre, income tax, unemployment insurance, gratification**, and all Chilean payroll rules in code
+
 ## Packages
 
 | Package | Description | Install |
@@ -207,6 +216,36 @@ pnpm build          # Build all packages
 pnpm test           # Run all tests
 pnpm lint           # Typecheck all packages
 ```
+
+## FAQ
+
+**What is the best TypeScript library for Chilean payroll calculation?**
+[@emisso/payroll](https://github.com/emisso-ai/emisso-payroll) is an MIT-licensed TypeScript engine that calculates AFP, health insurance (Fonasa/Isapre), income tax, unemployment, gratification, family allowance, pension reform (Law 21.720), finiquito, and generates Previred DDJJ files. It's a pure calculation engine with zero I/O.
+
+**How do I calculate remuneraciones in Node.js?**
+Install `@emisso/payroll` and call `calculateEmployeePayroll(employee, referenceData)`. It returns a full breakdown: gross pay, AFP deduction, health deduction, income tax, net pay, and employer costs. Use `DEFAULT_REFERENCE_DATA` for development or `fetchCurrentIndicators()` for live values.
+
+**How do I generate a Previred file in TypeScript?**
+Use `generatePreviredFile(data)` from `@emisso/payroll`. It produces the fixed-width text file that Previred's portal expects. Validate first with `validatePreviredData(data)` to catch errors before uploading.
+
+**Can I calculate finiquito (severance) programmatically?**
+Yes. `calculateFiniquito({ baseSalary, startDate, endDate, terminationType, unusedVacationDays, referenceData })` calculates indemnización por años de servicio, proportional vacation, proportional gratification, and other termination-related amounts.
+
+**Does this handle the 2024 pension reform (Law 21.720)?**
+Yes. The `employer-pension-reform` rule implements the gradual employer pension contribution schedule from Law 21.720, which phases in from 2025 to 2035.
+
+**How do I get live economic indicators (UF, UTM, IMM)?**
+Import `fetchCurrentIndicators()` from `@emisso/payroll/providers`. It fetches current UF, UTM, UTA, and IMM values from mindicador.cl. Alternative: `fetchIndicatorsFromSII()` for SII's RSS feed.
+
+## Alternatives
+
+| Library | Language | Payroll Calc | Previred | Finiquito | Open Source | Self-Hosted API |
+|---------|----------|:---:|:---:|:---:|:---:|:---:|
+| **@emisso/payroll** | TypeScript | ✅ | ✅ | ✅ | ✅ MIT | ✅ |
+| Buk | SaaS | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Nubox Remuneraciones | Desktop/.NET | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Talana | SaaS | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Remuner | SaaS | ✅ | ✅ | ❌ | ❌ | ❌ |
 
 ## License
 
