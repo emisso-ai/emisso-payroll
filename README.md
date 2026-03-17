@@ -17,6 +17,7 @@ Chilean payroll calculation engine — AFP, health insurance, income tax, unempl
 |---------|-------------|---------|
 | `@emisso/payroll` | Pure calculation engine (zero I/O) | `npm install @emisso/payroll` |
 | `@emisso/payroll-api` | Full-stack API layer (Drizzle + Effect) | `npm install @emisso/payroll-api` |
+| `@emisso/payroll-cli` | Command-line interface | `npm install -g @emisso/payroll-cli` |
 
 ## Quick Start — Engine
 
@@ -207,6 +208,37 @@ curl -X POST http://localhost:3000/api/payroll/runs \
 | Pension Reform | `rules/employer-pension-reform` | Law 21.720 employer contribution |
 | Overtime | `rules/overtime` | 50% surcharge calculation |
 | Finiquito | `rules/finiquito` | Severance: indemnización, vacaciones, etc. |
+
+## CLI
+
+```bash
+npm install -g @emisso/payroll-cli
+```
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `payroll calculate -i batch.json` | Batch payroll calculation from JSON file |
+| `payroll calculate-employee --base-salary 1500000 --afp habitat --health fonasa` | Single employee calculation |
+| `payroll net-to-gross --target-net 1200000 --afp habitat --health fonasa` | Reverse solver: net → gross |
+| `payroll finiquito --hire-date 2020-01-15 --termination-date 2026-03-15 --type despido_sin_causa --base-salary 1500000` | Severance calculation |
+| `payroll overtime --hours 10 --base-salary 1000000` | Overtime pay calculation |
+| `payroll indicators --source defaults` | Show economic indicators (UF, UTM, IMM) |
+| `payroll previred generate -i data.json -o ddjj.txt` | Generate Previred DDJJ file |
+| `payroll previred validate -i data.json` | Validate Previred data |
+| `payroll rut validate 12345678-5` | Validate Chilean RUT |
+| `payroll rut format 123456785` | Format RUT with dots and dash |
+| `payroll doctor` | Check system health and dependencies |
+
+### Output Formats
+
+All commands support `--format table|csv|json` and `--json` shorthand. Defaults to table for TTY, CSV for pipes.
+
+```bash
+payroll calculate-employee --base-salary 1500000 --afp habitat --health fonasa --json
+payroll calculate -i batch.json --format csv > output.csv
+```
 
 ## Development
 
