@@ -1,6 +1,6 @@
 {
   "name": "@emisso/payroll-cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "CLI for Chilean payroll calculations — AFP, health, tax, Previred, and more",
   "type": "module",
   "main": "./dist/src/index.cjs",
@@ -16,7 +16,9 @@
       "require": "./dist/src/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -26,8 +28,17 @@
     "prepublishOnly": "npm run build"
   },
   "keywords": [
-    "payroll", "chile", "cli", "remuneraciones", "afp", "previred",
-    "liquidacion", "impuestos", "finiquito", "typescript", "sdk"
+    "payroll",
+    "chile",
+    "cli",
+    "remuneraciones",
+    "afp",
+    "previred",
+    "liquidacion",
+    "impuestos",
+    "finiquito",
+    "typescript",
+    "sdk"
   ],
   "author": "Emisso <hello@emisso.ai>",
   "license": "MIT",
