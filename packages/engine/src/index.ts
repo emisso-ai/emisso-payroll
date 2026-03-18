@@ -8,3 +8,4 @@ export * from './previred/index.js';
 export { calculateFiniquito } from './rules/finiquito.js';
 export type { FiniquitoInput, FiniquitoResult, TerminationType } from './rules/finiquito.js';
 export { calculateOvertime } from './rules/overtime.js';
+export { simulate, simulateEmployee, calcular, calcularEmpleado } from './simulate.js';

@@ -84,6 +84,9 @@ export function createPayrollHandlers(deps: {
   const calculatePayrollRun: HandlerFn = (_req, ctx) =>
     handleEffect(payrollService.calculateRun(ctx.tenantId, ctx.params.id!));
 
+  const simulatePayrollRun: HandlerFn = (_req, ctx) =>
+    handleEffect(payrollService.simulateRun(ctx.tenantId, ctx.params.id!));
+
   const approvePayrollRun: HandlerFn = (_req, ctx) =>
     handleEffect(payrollService.approveRun(ctx.tenantId, ctx.params.id!));
 
@@ -95,6 +98,7 @@ export function createPayrollHandlers(deps: {
     getPayrollRun,
     createPayrollRun,
     calculatePayrollRun,
+    simulatePayrollRun,
     approvePayrollRun,
     voidPayrollRun,
   };
