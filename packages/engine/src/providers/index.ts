@@ -3,6 +3,3 @@ export type { EconomicIndicators, MindicadorFetchError } from './mindicador.js';
 
 export { fetchIndicatorsFromSII } from './sii-rss.js';
 export type { SIIFetchError } from './sii-rss.js';
-
-export { fetchAFPRates } from './afp-scraper.js';
-export type { AFPRate, AFPScraperError } from './afp-scraper.js';

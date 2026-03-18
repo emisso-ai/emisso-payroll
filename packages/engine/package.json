@@ -16,6 +16,11 @@
       "types": "./dist/providers.d.ts",
       "import": "./dist/providers.js",
       "require": "./dist/providers.cjs"
+    },
+    "./providers/node": {
+      "types": "./dist/providers-node.d.ts",
+      "import": "./dist/providers-node.js",
+      "require": "./dist/providers-node.cjs"
     }
   },
   "files": [
