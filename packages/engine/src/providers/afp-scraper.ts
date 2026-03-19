@@ -198,7 +198,7 @@ const DEFAULT_SIS_RATE = 1.54;
  * @example
  * ```typescript
  * import { Effect } from "effect";
- * import { fetchAFPRates } from "@emisso/payroll/providers";
+ * import { fetchAFPRates } from "@emisso/payroll/providers/node";
  *
  * const program = Effect.gen(function* () {
  *   const rates = yield* fetchAFPRates(2026, 2);
@@ -251,10 +251,11 @@ function validateDateParameters(
 ): Effect.Effect<void, ValidationError, never> {
   const errors: Array<{ path: string; message: string }> = [];
 
-  if (year < 2004 || year > 2030) {
+  const maxYear = new Date().getFullYear() + 1;
+  if (year < 2004 || year > maxYear) {
     errors.push({
       path: "year",
-      message: `El año debe estar entre 2004 y 2030, recibido: ${year}`,
+      message: `El año debe estar entre 2004 y ${maxYear}, recibido: ${year}`,
     });
   }
 
@@ -320,7 +321,7 @@ function fetchHTML(url: string): Effect.Effect<string, NetworkError, never> {
  * Examples: "1,44" -> 1.44, "0,51" -> 0.51
  */
 function parseChileanDecimal(value: string): number | null {
-  const normalized = value.trim().replace(',', '.');
+  const normalized = value.trim().replace(/,/g, '.');
   const parsed = Number.parseFloat(normalized);
 
   if (Number.isNaN(parsed)) {
