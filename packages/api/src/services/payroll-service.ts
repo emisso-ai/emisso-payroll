@@ -122,6 +122,121 @@ export function createPayrollService(deps: {
       });
     },
 
+    simulateRun(
+      tenantId: string,
+      runId: string,
+    ): Effect.Effect<
+      {
+        results: CalculationResult[];
+        totals: {
+          totalEmployees: number;
+          totalGrossPay: number;
+          totalDeductions: number;
+          totalNetPay: number;
+        };
+      },
+      AppError
+    > {
+      return Effect.gen(function* () {
+        // 1. Fetch the run (read-only, no status transition)
+        const run = yield* payrollRepo.getRunById(tenantId, runId);
+
+        // 1b. Reject simulating terminal-state runs
+        if (run.status === "voided" || run.status === "paid") {
+          return yield* Effect.fail(
+            ValidationError.make(
+              `Cannot simulate a ${run.status} run`,
+              "status",
+            ),
+          );
+        }
+
+        // 2. Fetch independent data in parallel
+        const [activeEmployees, config, allEarnings, allDeductions] =
+          yield* Effect.all(
+            [
+              employeeRepo.list(tenantId, { isActive: true }),
+              tenantService.getConfig(tenantId),
+              payrollRepo.getEarningsByRun(tenantId, runId),
+              payrollRepo.getDeductionsByRun(tenantId, runId),
+            ],
+            { concurrency: 4 },
+          );
+
+        if (activeEmployees.length === 0) {
+          return yield* Effect.fail(
+            ValidationError.make("No active employees found for simulation"),
+          );
+        }
+
+        // 3. Build reference data
+        const refData = yield* referenceService.buildReferenceData(
+          undefined,
+          config.mutualRate,
+        );
+
+        // 4. Map employees → engine inputs
+        const earningsByEmployee = groupBy(allEarnings, (e) => e.employeeId);
+        const deductionsByEmployee = groupBy(allDeductions, (d) => d.employeeId);
+
+        const employeeInputs = activeEmployees.map((emp) =>
+          employeeToEngineInput(
+            emp,
+            earningsByEmployee.get(emp.id) ?? [],
+            deductionsByEmployee.get(emp.id) ?? [],
+          ),
+        );
+
+        // 5. Call engine
+        const results: CalculationResult[] = yield* Effect.tryPromise({
+          try: () =>
+            calculatePayroll({
+              employees: employeeInputs,
+              referenceData: refData,
+              periodYear: run.periodYear,
+              periodMonth: run.periodMonth,
+            }),
+          catch: (e) =>
+            ValidationError.make(
+              `Payroll simulation failed: ${e instanceof Error ? e.message : String(e)}`,
+            ),
+        });
+
+        // 6. Guard against empty results
+        if (results.length === 0) {
+          return yield* Effect.fail(
+            ValidationError.make("Engine returned no results for active employees"),
+          );
+        }
+
+        // 7. Compute totals (no persistence)
+        let totalGrossPay = 0;
+        let totalDeductions = 0;
+        let totalNetPay = 0;
+        for (const r of results) {
+          totalGrossPay +=
+            r.earnings.totalImponible + r.earnings.totalNonTaxable;
+          totalDeductions += r.deductions.total;
+          totalNetPay += r.netPay;
+        }
+
+        return {
+          results,
+          totals: {
+            totalEmployees: results.length,
+            totalGrossPay,
+            totalDeductions,
+            totalNetPay,
+          },
+        };
+      });
+    },
+
+    // Spanish alias for calculateRun
+    liquidar(tenantId: string, runId: string): Effect.Effect<PayrollRun, AppError> {
+      return createPayrollService(deps).calculateRun(tenantId, runId);
+    },
+
     approveRun(
       tenantId: string,
       runId: string,

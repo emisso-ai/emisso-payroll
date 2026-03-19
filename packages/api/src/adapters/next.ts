@@ -104,6 +104,7 @@ export function createPayrollRouter(config: PayrollRouterConfig) {
     { method: "GET", pattern: `${base}/runs/:id`, handler: prHandlers.getPayrollRun },
     { method: "POST", pattern: `${base}/runs`, handler: prHandlers.createPayrollRun },
     { method: "POST", pattern: `${base}/runs/:id/calculate`, handler: prHandlers.calculatePayrollRun },
+    { method: "POST", pattern: `${base}/runs/:id/simulate`, handler: prHandlers.simulatePayrollRun },
     { method: "POST", pattern: `${base}/runs/:id/approve`, handler: prHandlers.approvePayrollRun },
     { method: "POST", pattern: `${base}/runs/:id/void`, handler: prHandlers.voidPayrollRun },
 
