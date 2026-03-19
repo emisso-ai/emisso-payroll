@@ -141,6 +141,16 @@ export function createPayrollService(deps: {
         // 1. Fetch the run (read-only, no status transition)
         const run = yield* payrollRepo.getRunById(tenantId, runId);
 
+        // 1b. Reject simulating terminal-state runs
+        if (run.status === "voided" || run.status === "paid") {
+          return yield* Effect.fail(
+            ValidationError.make(
+              `Cannot simulate a ${run.status} run`,
+              "status",
+            ),
+          );
+        }
+
         // 2. Fetch independent data in parallel
         const [activeEmployees, config, allEarnings, allDeductions] =
           yield* Effect.all(
@@ -192,7 +202,14 @@ export function createPayrollService(deps: {
             ),
         });
 
-        // 6. Compute totals (no persistence)
+        // 6. Guard against empty results
+        if (results.length === 0) {
+          return yield* Effect.fail(
+            ValidationError.make("Engine returned no results for active employees"),
+          );
+        }
+
+        // 7. Compute totals (no persistence)
         let totalGrossPay = 0;
         let totalDeductions = 0;
         let totalNetPay = 0;
@@ -216,8 +233,8 @@ export function createPayrollService(deps: {
     },
 
     // Spanish alias for calculateRun
-    liquidar(tenantId: string, runId: string) {
-      return this.calculateRun(tenantId, runId);
+    liquidar(tenantId: string, runId: string): Effect.Effect<PayrollRun, AppError> {
+      return createPayrollService(deps).calculateRun(tenantId, runId);
     },
 
     approveRun(
