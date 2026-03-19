@@ -1,5 +1,16 @@
 # @emisso/payroll-api
 
+## 0.2.0
+
+### Minor Changes
+
+- 48eabd7: Add simulate/calcular aliases and simulateRun endpoint for dry-run payroll previews without persisting results.
+
+### Patch Changes
+
+- Updated dependencies [48eabd7]
+  - @emisso/payroll@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes
