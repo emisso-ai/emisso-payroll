@@ -1,5 +1,11 @@
 # @emisso/payroll
 
+## 0.1.3
+
+### Patch Changes
+
+- 638c241: Fix AFP calculation to include the mandatory 10% pension contribution. Previously only the AFP commission rate was applied, producing incorrect deductions and net pay.
+
 ## 0.1.2
 
 ### Patch Changes
