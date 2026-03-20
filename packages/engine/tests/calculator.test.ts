@@ -185,4 +185,80 @@ describe('Payroll Calculator', () => {
       calculateEmployeePayroll(sampleEmployee, referenceData, PRE_REFORM_DATE).netPay + 200000
     );
   });
+
+  it('should treat viatico as non-imponible and non-taxable (Art. 41 CT)', () => {
+    const employeeWithViatico: EmployeePayrollInput = {
+      ...sampleEmployee,
+      earnings: [
+        { type: 'viatico', description: 'Viático terreno', amount: 100000 },
+      ],
+    };
+
+    const withViatico = calculateEmployeePayroll(employeeWithViatico, referenceData, PRE_REFORM_DATE);
+    const without = calculateEmployeePayroll(sampleEmployee, referenceData, PRE_REFORM_DATE);
+
+    // Viatico should not affect imponible or taxable base
+    expect(withViatico.earnings.totalImponible).toBe(without.earnings.totalImponible);
+    expect(withViatico.earnings.totalTaxable).toBe(without.earnings.totalTaxable);
+    // But it should appear in totalNonTaxable
+    expect(withViatico.earnings.totalNonTaxable).toBe(without.earnings.totalNonTaxable + 100000);
+    // And employee receives it in liquid pay
+    expect(withViatico.netPay).toBe(without.netPay + 100000);
+  });
+
+  it('should treat bonus as always imponible even if flags say otherwise', () => {
+    const employeeWithBonus: EmployeePayrollInput = {
+      ...sampleEmployee,
+      earnings: [
+        { type: 'bonus', description: 'Bono', amount: 100000, isImponible: false, isTaxable: false },
+      ],
+    };
+
+    const result = calculateEmployeePayroll(employeeWithBonus, referenceData, PRE_REFORM_DATE);
+
+    // Bonus is always imponible + taxable by law, flags are overridden
+    expect(result.earnings.totalImponible).toBe(sampleEmployee.baseSalary + 213354 + 100000);
+  });
+
+  it('should default allowance to imponible + taxable when flags omitted', () => {
+    const employeeWithAllowance: EmployeePayrollInput = {
+      ...sampleEmployee,
+      earnings: [
+        { type: 'allowance', description: 'Asignación', amount: 50000 },
+      ],
+    };
+
+    const result = calculateEmployeePayroll(employeeWithAllowance, referenceData, PRE_REFORM_DATE);
+
+    // allowance without flags defaults to imponible + taxable
+    expect(result.earnings.totalImponible).toBe(sampleEmployee.baseSalary + 213354 + 50000);
+    expect(result.earnings.totalTaxable).toBe(sampleEmployee.baseSalary + 213354 + 50000);
+  });
+
+  it('should respect explicit flags on allowance type', () => {
+    const employeeWithExemptAllowance: EmployeePayrollInput = {
+      ...sampleEmployee,
+      earnings: [
+        { type: 'allowance', description: 'Asignación herramientas', amount: 50000, isImponible: false, isTaxable: false },
+      ],
+    };
+
+    const result = calculateEmployeePayroll(employeeWithExemptAllowance, referenceData, PRE_REFORM_DATE);
+
+    // Explicit flags on allowance should be respected
+    expect(result.earnings.totalImponible).toBe(sampleEmployee.baseSalary + 213354);
+  });
+
+  it('should handle asymmetric flags on allowance (imponible but not taxable)', () => {
+    const employee: EmployeePayrollInput = {
+      ...sampleEmployee,
+      earnings: [
+        { type: 'allowance', description: 'Asignación especial', amount: 80000, isImponible: true, isTaxable: false },
+      ],
+    };
+    const result = calculateEmployeePayroll(employee, referenceData, PRE_REFORM_DATE);
+
+    expect(result.earnings.totalImponible).toBe(sampleEmployee.baseSalary + 213354 + 80000);
+    expect(result.earnings.totalTaxable).toBe(sampleEmployee.baseSalary + 213354);
+  });
 });

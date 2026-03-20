@@ -9,6 +9,7 @@ import { roundCLP, sum, subtract } from './money.js';
 import type {
   CalculationInput,
   CalculationResult,
+  EarningType,
   EmployeePayrollInput,
   ReferenceData,
 } from './types.js';
@@ -64,16 +65,18 @@ export function calculateEmployeePayroll(
     imm
   );
 
-  // Process earnings array: separate by type and flags
+  // Process earnings array: separate by type and resolve legal flags
   let overtimeTotal = 0;
   let bonusesTotal = 0;
   let allowancesTotal = 0;
   let otherEarningsTotal = 0;
   let imponibleEarnings = 0;
   let taxableEarnings = 0;
+  let nonTaxableEarnings = 0;
 
   for (const earning of employee.earnings) {
     const amount = roundCLP(earning.amount);
+    const { isImponible, isTaxable } = resolveEarningFlags(earning.type, earning.isImponible, earning.isTaxable);
 
     // Categorize by type
     switch (earning.type) {
@@ -92,12 +95,14 @@ export function calculateEmployeePayroll(
         break;
     }
 
-    // Track imponible and taxable sums from earnings array
-    if (earning.isImponible) {
+    if (isImponible) {
       imponibleEarnings = sum(imponibleEarnings, amount);
     }
-    if (earning.isTaxable) {
+    if (isTaxable) {
       taxableEarnings = sum(taxableEarnings, amount);
+    }
+    if (!isImponible && !isTaxable) {
+      nonTaxableEarnings = sum(nonTaxableEarnings, amount);
     }
   }
 
@@ -121,7 +126,7 @@ export function calculateEmployeePayroll(
   const totalTaxable = sum(baseSalary, gratification, taxableEarnings);
 
   // Non-taxable = colacion + movilizacion + familyAllowance + non-taxable/non-imponible earnings
-  const totalNonTaxable = sum(colacion, movilizacion, familyAllowance);
+  const totalNonTaxable = sum(colacion, movilizacion, familyAllowance, nonTaxableEarnings);
 
   // --- 3. Deductions ---
 
@@ -212,4 +217,35 @@ export function calculateEmployeePayroll(
       total: totalEmployerCosts,
     },
   };
+}
+
+/**
+ * Resolve imponible/taxable flags for an earning based on its type.
+ *
+ * Well-known types have legally-mandated flags (Art. 41 Código del Trabajo):
+ * - bonus, commission, overtime: always imponible + taxable
+ * - viatico, reimbursement, aguinaldo, loss_of_cash: always exempt
+ * - allowance, other: use caller-provided flags (default true)
+ */
+export function resolveEarningFlags(
+  type: EarningType,
+  isImponible?: boolean,
+  isTaxable?: boolean,
+): { isImponible: boolean; isTaxable: boolean } {
+  switch (type) {
+    case 'bonus':
+    case 'commission':
+    case 'overtime':
+      return { isImponible: true, isTaxable: true };
+
+    case 'viatico':
+    case 'reimbursement':
+    case 'aguinaldo':
+    case 'loss_of_cash':
+      return { isImponible: false, isTaxable: false };
+
+    case 'allowance':
+    case 'other':
+      return { isImponible: isImponible ?? true, isTaxable: isTaxable ?? true };
+  }
 }

@@ -9,12 +9,33 @@ import { z } from 'zod';
 
 // --- Zod Schemas ---
 
+/**
+ * Well-known earning types with legal defaults for imponible/taxable flags.
+ *
+ * - bonus, commission, overtime: always imponible + taxable
+ * - viatico, reimbursement, aguinaldo, loss_of_cash: always exempt (Art. 41 CT)
+ * - allowance, other: caller-defined via isTaxable/isImponible
+ */
+export const EarningTypeSchema = z.enum([
+  'bonus',
+  'commission',
+  'overtime',
+  'allowance',
+  'viatico',
+  'reimbursement',
+  'aguinaldo',
+  'loss_of_cash',
+  'other',
+]);
+
+export type EarningType = z.infer<typeof EarningTypeSchema>;
+
 export const EarningSchema = z.object({
-  type: z.string(),
+  type: EarningTypeSchema,
   description: z.string(),
   amount: z.number(),
-  isTaxable: z.boolean(),
-  isImponible: z.boolean(),
+  isTaxable: z.boolean().optional(),
+  isImponible: z.boolean().optional(),
 });
 
 export const DeductionSchema = z.object({
