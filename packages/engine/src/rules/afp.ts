@@ -7,8 +7,15 @@
 
 import { cappedPercentage } from '../money.js';
 
+/** Mandatory pension contribution rate (10%) — fixed by law for all AFPs */
+const MANDATORY_PENSION_RATE = 10;
+
 /**
  * Calculate AFP pension fund deduction for an employee.
+ *
+ * The total AFP deduction is the mandatory 10% pension contribution
+ * plus the AFP provider's commission rate (e.g. 1.27% for Habitat),
+ * applied to imponible income capped at 81.6 UF.
  *
  * @param imponibleIncome - Imponible income in CLP
  * @param afpCode - AFP provider code (e.g. 'capital', 'habitat')
@@ -27,5 +34,5 @@ export function calculateAFP(
     throw new Error(`AFP provider not found: ${afpCode}`);
   }
 
-  return cappedPercentage(imponibleIncome, uf, rates.commissionRate);
+  return cappedPercentage(imponibleIncome, uf, MANDATORY_PENSION_RATE + rates.commissionRate);
 }
