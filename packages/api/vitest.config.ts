@@ -9,7 +9,7 @@ export default defineConfig({
   resolve: {
     alias: {
       // Engine package.json exports reference .mjs but tsup with "type": "module" produces .js
-      "@emisso/payroll": path.resolve(__dirname, "../engine/src/index.ts"),
+      "@emisso/payroll-cl": path.resolve(__dirname, "../engine/src/index.ts"),
     },
   },
 });

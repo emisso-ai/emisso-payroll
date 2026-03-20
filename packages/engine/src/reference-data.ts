@@ -13,7 +13,7 @@ import type { ReferenceData } from './types.js';
  *
  * NOTE: These values change monthly/annually. For production use,
  * fetch current values from official sources using the providers module:
- *   import { fetchCurrentIndicators } from '@emisso/payroll/providers'
+ *   import { fetchCurrentIndicators } from '@emisso/payroll-cl/providers'
  */
 export const DEFAULT_REFERENCE_DATA: ReferenceData = {
   uf: 38_500,

@@ -3,7 +3,7 @@
  */
 
 import { z } from "zod";
-import type { PreviredFileData } from "@emisso/payroll";
+import type { PreviredFileData } from "@emisso/payroll-cl";
 
 export const PreviredFileDataSchema = z.object({
   company: z.object({

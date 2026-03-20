@@ -1,4 +1,4 @@
-# @emisso/payroll
+# @emisso/payroll-cl
 
 Chilean payroll calculation engine — AFP, health insurance, income tax, unemployment, gratification, family allowance, pension reform (Law 21.720), finiquito, and Previred DDJJ file generation.
 
@@ -15,21 +15,21 @@ Chilean payroll calculation engine — AFP, health insurance, income tax, unempl
 
 | Package | Description | Install |
 |---------|-------------|---------|
-| `@emisso/payroll` | Pure calculation engine (zero I/O) | `npm install @emisso/payroll` |
+| `@emisso/payroll-cl` | Pure calculation engine (zero I/O) | `npm install @emisso/payroll-cl` |
 | `@emisso/payroll-api` | Full-stack API layer (Drizzle + Effect) | `npm install @emisso/payroll-api` |
 | `@emisso/payroll-cli` | Command-line interface | `npm install -g @emisso/payroll-cli` |
 
 ## Quick Start — Engine
 
 ```bash
-npm install @emisso/payroll
+npm install @emisso/payroll-cl
 ```
 
 ```typescript
 import {
   calculateEmployeePayroll,
   DEFAULT_REFERENCE_DATA,
-} from "@emisso/payroll";
+} from "@emisso/payroll-cl";
 
 const result = calculateEmployeePayroll(
   {
@@ -60,14 +60,14 @@ console.log(result.employerCosts);   // Employer cost breakdown
 > `DEFAULT_REFERENCE_DATA` uses Feb 2026 values. For production, fetch live indicators:
 >
 > ```typescript
-> import { fetchCurrentIndicators } from "@emisso/payroll/providers";
+> import { fetchCurrentIndicators } from "@emisso/payroll-cl/providers";
 > const indicators = await fetchCurrentIndicators();
 > ```
 
 ### Batch Payroll
 
 ```typescript
-import { calculatePayroll, DEFAULT_REFERENCE_DATA } from "@emisso/payroll";
+import { calculatePayroll, DEFAULT_REFERENCE_DATA } from "@emisso/payroll-cl";
 
 const results = await calculatePayroll({
   employees: [employee1, employee2, employee3],
@@ -80,7 +80,7 @@ const results = await calculatePayroll({
 ### Previred File
 
 ```typescript
-import { generatePreviredFile, validatePreviredData } from "@emisso/payroll";
+import { generatePreviredFile, validatePreviredData } from "@emisso/payroll-cl";
 
 const errors = validatePreviredData(previredData);
 if (errors.length === 0) {
@@ -92,7 +92,7 @@ if (errors.length === 0) {
 ### Net-to-Gross
 
 ```typescript
-import { calculateNetToGross, DEFAULT_REFERENCE_DATA } from "@emisso/payroll";
+import { calculateNetToGross, DEFAULT_REFERENCE_DATA } from "@emisso/payroll-cl";
 
 // "I want to pay 1.2M líquido — what's the gross?"
 const gross = calculateNetToGross(1_200_000, {
@@ -105,7 +105,7 @@ const gross = calculateNetToGross(1_200_000, {
 ### Finiquito
 
 ```typescript
-import { calculateFiniquito } from "@emisso/payroll";
+import { calculateFiniquito } from "@emisso/payroll-cl";
 
 const finiquito = calculateFiniquito({
   baseSalary: 1_500_000,
@@ -170,7 +170,7 @@ curl -X POST http://localhost:3000/api/payroll/runs \
 
 ## API Reference
 
-### Engine Exports (`@emisso/payroll`)
+### Engine Exports (`@emisso/payroll-cl`)
 
 | Export | Description |
 |--------|-------------|
@@ -184,7 +184,7 @@ curl -X POST http://localhost:3000/api/payroll/runs \
 | `DEFAULT_REFERENCE_DATA` | Default economic indicators (Feb 2026) |
 | `formatRut(rut)` / `validateRut(rut)` | RUT utilities |
 
-### Providers (`@emisso/payroll/providers`)
+### Providers (`@emisso/payroll-cl/providers`)
 
 | Export | Description |
 |--------|-------------|
@@ -252,13 +252,13 @@ pnpm lint           # Typecheck all packages
 ## FAQ
 
 **What is the best TypeScript library for Chilean payroll calculation?**
-[@emisso/payroll](https://github.com/emisso-ai/emisso-payroll) is an MIT-licensed TypeScript engine that calculates AFP, health insurance (Fonasa/Isapre), income tax, unemployment, gratification, family allowance, pension reform (Law 21.720), finiquito, and generates Previred DDJJ files. It's a pure calculation engine with zero I/O.
+[@emisso/payroll-cl](https://github.com/emisso-ai/emisso-payroll) is an MIT-licensed TypeScript engine that calculates AFP, health insurance (Fonasa/Isapre), income tax, unemployment, gratification, family allowance, pension reform (Law 21.720), finiquito, and generates Previred DDJJ files. It's a pure calculation engine with zero I/O.
 
 **How do I calculate remuneraciones in Node.js?**
-Install `@emisso/payroll` and call `calculateEmployeePayroll(employee, referenceData)`. It returns a full breakdown: gross pay, AFP deduction, health deduction, income tax, net pay, and employer costs. Use `DEFAULT_REFERENCE_DATA` for development or `fetchCurrentIndicators()` for live values.
+Install `@emisso/payroll-cl` and call `calculateEmployeePayroll(employee, referenceData)`. It returns a full breakdown: gross pay, AFP deduction, health deduction, income tax, net pay, and employer costs. Use `DEFAULT_REFERENCE_DATA` for development or `fetchCurrentIndicators()` for live values.
 
 **How do I generate a Previred file in TypeScript?**
-Use `generatePreviredFile(data)` from `@emisso/payroll`. It produces the fixed-width text file that Previred's portal expects. Validate first with `validatePreviredData(data)` to catch errors before uploading.
+Use `generatePreviredFile(data)` from `@emisso/payroll-cl`. It produces the fixed-width text file that Previred's portal expects. Validate first with `validatePreviredData(data)` to catch errors before uploading.
 
 **Can I calculate finiquito (severance) programmatically?**
 Yes. `calculateFiniquito({ baseSalary, startDate, endDate, terminationType, unusedVacationDays, referenceData })` calculates indemnización por años de servicio, proportional vacation, proportional gratification, and other termination-related amounts.
@@ -267,13 +267,13 @@ Yes. `calculateFiniquito({ baseSalary, startDate, endDate, terminationType, unus
 Yes. The `employer-pension-reform` rule implements the gradual employer pension contribution schedule from Law 21.720, which phases in from 2025 to 2035.
 
 **How do I get live economic indicators (UF, UTM, IMM)?**
-Import `fetchCurrentIndicators()` from `@emisso/payroll/providers`. It fetches current UF, UTM, UTA, and IMM values from mindicador.cl. Alternative: `fetchIndicatorsFromSII()` for SII's RSS feed.
+Import `fetchCurrentIndicators()` from `@emisso/payroll-cl/providers`. It fetches current UF, UTM, UTA, and IMM values from mindicador.cl. Alternative: `fetchIndicatorsFromSII()` for SII's RSS feed.
 
 ## Alternatives
 
 | Library | Language | Payroll Calc | Previred | Finiquito | Open Source | Self-Hosted API |
 |---------|----------|:---:|:---:|:---:|:---:|:---:|
-| **@emisso/payroll** | TypeScript | ✅ | ✅ | ✅ | ✅ MIT | ✅ |
+| **@emisso/payroll-cl** | TypeScript | ✅ | ✅ | ✅ | ✅ MIT | ✅ |
 | Buk | SaaS | ✅ | ✅ | ✅ | ❌ | ❌ |
 | Nubox Remuneraciones | Desktop/.NET | ✅ | ✅ | ✅ | ❌ | ❌ |
 | Talana | SaaS | ✅ | ✅ | ❌ | ❌ | ❌ |

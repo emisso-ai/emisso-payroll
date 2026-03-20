@@ -1,26 +1,26 @@
-# @emisso/payroll
+# @emisso/payroll-cl
 
 > Chilean payroll calculation engine — AFP, health, tax, unemployment, Previred, finiquito, and more.
 
 ## Overview
 
-@emisso/payroll is a pure TypeScript calculation engine for Chilean payroll (remuneraciones). It handles all mandatory deductions (AFP, health, income tax, unemployment), employer costs (SIS, mutual, pension reform), and generates Previred DDJJ files. It includes a net-to-gross reverse solver and finiquito calculator. An optional API package adds a self-hosted REST layer with PostgreSQL persistence and multi-tenant support.
+@emisso/payroll-cl is a pure TypeScript calculation engine for Chilean payroll (remuneraciones). It handles all mandatory deductions (AFP, health, income tax, unemployment), employer costs (SIS, mutual, pension reform), and generates Previred DDJJ files. It includes a net-to-gross reverse solver and finiquito calculator. An optional API package adds a self-hosted REST layer with PostgreSQL persistence and multi-tenant support.
 
 ## Architecture
 
 Monorepo with two packages:
 
-- **`packages/engine`** (`@emisso/payroll`) — Pure calculation engine. Zero I/O, zod only. Optional `/providers` sub-entry for fetching live indicators.
+- **`packages/engine`** (`@emisso/payroll-cl`) — Pure calculation engine. Zero I/O, zod only. Optional `/providers` sub-entry for fetching live indicators.
 - **`packages/api`** (`@emisso/payroll-api`) — REST API layer. Drizzle ORM + Effect TS + PostgreSQL. Next.js adapter included.
 
 ## Getting Started
 
 ```bash
-npm install @emisso/payroll
+npm install @emisso/payroll-cl
 ```
 
 ```typescript
-import { calculateEmployeePayroll, DEFAULT_REFERENCE_DATA } from "@emisso/payroll";
+import { calculateEmployeePayroll, DEFAULT_REFERENCE_DATA } from "@emisso/payroll-cl";
 
 const result = calculateEmployeePayroll(
   {
