@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import type { ReferenceData } from "@emisso/payroll-cl";
+import type { ReferenceData } from "@emisso/payroll";
 import type { ReferenceRepo } from "../repos/reference-repo.js";
 import { buildReferenceData } from "../core/bridge.js";
 import type { AppError } from "../core/effect/app-error.js";

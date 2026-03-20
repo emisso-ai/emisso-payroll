@@ -7,7 +7,7 @@ import { Effect, Option } from "effect";
 import {
   generatePreviredFile,
   validatePreviredData,
-} from "@emisso/payroll-cl";
+} from "@emisso/payroll";
 import {
   OutputRenderer,
   CliError,

@@ -4,7 +4,7 @@
 
 import { Command, Args } from "@effect/cli";
 import { Effect } from "effect";
-import { validateRut, formatRut } from "@emisso/payroll-cl";
+import { validateRut, formatRut } from "@emisso/payroll";
 import {
   OutputRenderer,
   resolveFormat,

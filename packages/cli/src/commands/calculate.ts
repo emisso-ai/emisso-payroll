@@ -10,8 +10,8 @@ import {
   calculatePayroll,
   formatCLP,
   CalculationInputSchema,
-} from "@emisso/payroll-cl";
-import type { CalculationInput, CalculationResult } from "@emisso/payroll-cl";
+} from "@emisso/payroll";
+import type { CalculationInput, CalculationResult } from "@emisso/payroll";
 import {
   OutputRenderer,
   CliError,

@@ -1,7 +1,7 @@
 {
   "name": "@emisso/payroll-api",
   "version": "0.1.1",
-  "description": "Full payroll API layer — routes, services, and database for @emisso/payroll-cl",
+  "description": "Full payroll API layer — routes, services, and database for @emisso/payroll",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -55,7 +55,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@emisso/payroll-cl": "workspace:*",
+    "@emisso/payroll": "workspace:*",
     "drizzle-orm": "^0.38.0",
     "effect": "^3.0.0",
     "postgres": "^3.4.0",

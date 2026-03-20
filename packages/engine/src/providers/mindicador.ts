@@ -143,7 +143,7 @@ const MINDICADOR_API_URL = "https://mindicador.cl/api";
  * @example
  * ```typescript
  * import { Effect } from "effect";
- * import { fetchCurrentIndicators } from "@emisso/payroll-cl/providers";
+ * import { fetchCurrentIndicators } from "@emisso/payroll/providers";
  *
  * const program = Effect.gen(function* () {
  *   const indicators = yield* fetchCurrentIndicators();

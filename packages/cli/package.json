@@ -51,7 +51,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@emisso/payroll-cl": "workspace:*",
+    "@emisso/payroll": "workspace:*",
     "@emisso/cli-core": "^0.1.0",
     "effect": "^3.19.16",
     "@effect/cli": "^0.73.0",

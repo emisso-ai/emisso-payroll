@@ -1,10 +1,10 @@
-# @emisso/payroll-cl — Copilot Instructions
+# @emisso/payroll — Copilot Instructions
 
 Chilean payroll calculation engine — AFP, health, tax, unemployment, Previred, finiquito, and more.
 
 ## Monorepo Structure
 
-- `packages/engine/` — `@emisso/payroll-cl`: Pure calculation engine, zero I/O, zod only.
+- `packages/engine/` — `@emisso/payroll`: Pure calculation engine, zero I/O, zod only.
 - `packages/api/` — `@emisso/payroll-api`: REST API with Drizzle ORM + Effect TS + PostgreSQL.
 
 ## Code Style

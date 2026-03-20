@@ -1,4 +1,4 @@
-# @emisso/payroll-cl
+# @emisso/payroll
 
 Chilean payroll calculation engine (remuneraciones) — AFP pension, health insurance (Fonasa/Isapre), income tax (impuesto único), unemployment insurance (seguro de cesantía), gratification, family allowance, pension reform (Law 21.720), finiquito/severance, overtime, and Previred DDJJ file generation. First open-source TypeScript library for Chilean payroll calculations.
 
@@ -7,7 +7,7 @@ Chilean payroll calculation engine (remuneraciones) — AFP pension, health insu
 ```
 emisso-payroll/
 ├── packages/
-│   ├── engine/              @emisso/payroll-cl — pure TS, zod only
+│   ├── engine/              @emisso/payroll — pure TS, zod only
 │   │   ├── src/
 │   │   │   ├── types.ts         Zod schemas + interfaces
 │   │   │   ├── calculator.ts    Main orchestration (single + batch)
@@ -58,7 +58,7 @@ pnpm lint         # Typecheck all packages (tsc --noEmit)
 - **API:** Effect TS layers (Repo → Service → Handler), Data.TaggedError
 - **Tests:** Hand-verified values against manual calculations, no mocks, PGLite for DB tests
 - **Build:** tsup dual CJS+ESM with .d.ts
-- **Providers:** Optional sub-entry `@emisso/payroll-cl/providers` — Effect TS for fetching live indicators
+- **Providers:** Optional sub-entry `@emisso/payroll/providers` — Effect TS for fetching live indicators
 
 ## Key Invariants
 

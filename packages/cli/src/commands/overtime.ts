@@ -4,7 +4,7 @@
 
 import { Command, Options } from "@effect/cli";
 import { Effect } from "effect";
-import { calculateOvertime, formatCLP } from "@emisso/payroll-cl";
+import { calculateOvertime, formatCLP } from "@emisso/payroll";
 import {
   OutputRenderer,
   resolveFormat,

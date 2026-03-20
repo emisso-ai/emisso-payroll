@@ -1,6 +1,6 @@
 import { Effect } from "effect";
-import { calculatePayroll } from "@emisso/payroll-cl";
-import type { CalculationResult } from "@emisso/payroll-cl";
+import { calculatePayroll } from "@emisso/payroll";
+import type { CalculationResult } from "@emisso/payroll";
 import type { PayrollRepo } from "../repos/payroll-repo.js";
 import type { EmployeeRepo } from "../repos/employee-repo.js";
 import type { TenantService } from "./tenant-service.js";

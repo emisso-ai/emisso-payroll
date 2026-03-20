@@ -6,7 +6,7 @@
 import type {
   ReferenceData,
   EmployeePayrollInput,
-} from "@emisso/payroll-cl";
+} from "@emisso/payroll";
 import type {
   ReferenceIndicator,
   ReferenceAfpRate,

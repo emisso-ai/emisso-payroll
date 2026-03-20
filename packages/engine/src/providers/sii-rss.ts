@@ -135,7 +135,7 @@ const SII_RSS_URL = "https://zeus.sii.cl/admin/rss/sii_ind_rss.xml";
  * @example
  * ```typescript
  * import { Effect } from "effect";
- * import { fetchIndicatorsFromSII } from "@emisso/payroll-cl/providers";
+ * import { fetchIndicatorsFromSII } from "@emisso/payroll/providers";
  *
  * const program = Effect.gen(function* () {
  *   const indicators = yield* fetchIndicatorsFromSII();

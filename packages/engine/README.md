@@ -1,11 +1,11 @@
-# @emisso/payroll-cl
+# @emisso/payroll
 
 Chilean payroll calculation engine — AFP, health, tax, unemployment, Previred, and more.
 
 ## Install
 
 ```bash
-npm install @emisso/payroll-cl
+npm install @emisso/payroll
 ```
 
 ## Usage
@@ -14,7 +14,7 @@ npm install @emisso/payroll-cl
 import {
   calculateEmployeePayroll,
   DEFAULT_REFERENCE_DATA,
-} from '@emisso/payroll-cl';
+} from '@emisso/payroll';
 
 const result = calculateEmployeePayroll(
   {
@@ -46,7 +46,7 @@ Fetch live reference data from official Chilean sources:
 
 ```typescript
 import { Effect } from 'effect';
-import { fetchCurrentIndicators } from '@emisso/payroll-cl/providers';
+import { fetchCurrentIndicators } from '@emisso/payroll/providers';
 
 const program = Effect.gen(function* () {
   const indicators = yield* fetchCurrentIndicators();

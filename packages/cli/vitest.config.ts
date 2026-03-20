@@ -8,7 +8,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@emisso/payroll-cl": path.resolve(__dirname, "../engine/src/index.ts"),
+      "@emisso/payroll": path.resolve(__dirname, "../engine/src/index.ts"),
     },
   },
 });

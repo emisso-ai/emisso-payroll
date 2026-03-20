@@ -2,12 +2,12 @@ import { Effect } from "effect";
 import {
   generatePreviredFile,
   parseRut,
-} from "@emisso/payroll-cl";
+} from "@emisso/payroll";
 import type {
   PreviredFileData,
   PreviredEmployee,
   CalculationResult,
-} from "@emisso/payroll-cl";
+} from "@emisso/payroll";
 import type { PayrollRepo } from "../repos/payroll-repo.js";
 import type { TenantRepo } from "../repos/tenant-repo.js";
 import type { EmployeeRepo } from "../repos/employee-repo.js";

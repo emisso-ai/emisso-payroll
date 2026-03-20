@@ -198,7 +198,7 @@ const DEFAULT_SIS_RATE = 1.54;
  * @example
  * ```typescript
  * import { Effect } from "effect";
- * import { fetchAFPRates } from "@emisso/payroll-cl/providers/node";
+ * import { fetchAFPRates } from "@emisso/payroll/providers/node";
  *
  * const program = Effect.gen(function* () {
  *   const rates = yield* fetchAFPRates(2026, 2);

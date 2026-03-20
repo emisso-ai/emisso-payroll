@@ -1,5 +1,5 @@
 import { index, jsonb, timestamp, unique, uuid } from "drizzle-orm/pg-core";
-import type { CalculationResult } from "@emisso/payroll-cl";
+import type { CalculationResult } from "@emisso/payroll";
 import { payrollSchema, tenants } from "./tenants";
 import { payrollRuns } from "./payroll-runs";
 import { employees } from "./employees";

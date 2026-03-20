@@ -7,5 +7,5 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   splitting: false,
-  external: ["@emisso/payroll-cl", "@emisso/cli-core"],
+  external: ["@emisso/payroll", "@emisso/cli-core"],
 });

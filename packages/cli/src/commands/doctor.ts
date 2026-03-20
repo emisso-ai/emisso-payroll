@@ -45,16 +45,16 @@ export const doctorCommand = Command.make(
         detail: `${nodeVersion} (requires >= 18)`,
       });
 
-      // Check @emisso/payroll-cl availability
-      const payrollLoaded = yield* tryImport("@emisso/payroll-cl");
+      // Check @emisso/payroll availability
+      const payrollLoaded = yield* tryImport("@emisso/payroll");
       checks.push({
-        check: "@emisso/payroll-cl",
+        check: "@emisso/payroll",
         status: payrollLoaded ? "ok" : "error",
         detail: payrollLoaded ? "Loaded successfully" : "Failed to load",
       });
 
       // Check optional providers
-      const providersLoaded = yield* tryImport("@emisso/payroll-cl/providers");
+      const providersLoaded = yield* tryImport("@emisso/payroll/providers");
       checks.push({
         check: "Providers (optional)",
         status: providersLoaded ? "ok" : "info",

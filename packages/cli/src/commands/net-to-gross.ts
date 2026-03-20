@@ -8,8 +8,8 @@ import {
   solveNetToGross,
   DEFAULT_REFERENCE_DATA,
   formatCLP,
-} from "@emisso/payroll-cl";
-import type { NetToGrossInput } from "@emisso/payroll-cl";
+} from "@emisso/payroll";
+import type { NetToGrossInput } from "@emisso/payroll";
 import {
   OutputRenderer,
   resolveFormat,
