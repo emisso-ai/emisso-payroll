@@ -9,3 +9,4 @@ export { calculateFiniquito } from './rules/finiquito.js';
 export type { FiniquitoInput, FiniquitoResult, TerminationType } from './rules/finiquito.js';
 export { calculateOvertime } from './rules/overtime.js';
 export { simulate, simulateEmployee, calcular, calcularEmpleado } from './simulate.js';
+export { resolveReferenceData, clearIndicatorCache } from './fetch-indicators.js';

@@ -77,7 +77,7 @@ export const ReferenceDataSchema = z.object({
 
 export const CalculationInputSchema = z.object({
   employees: z.array(EmployeePayrollInputSchema),
-  referenceData: ReferenceDataSchema,
+  referenceData: ReferenceDataSchema.optional(),
   periodYear: z.number().int(),
   periodMonth: z.number().int().min(1).max(12),
   periodDate: z.date().optional().describe('Date for which calculation is performed (affects reform rate)'),
