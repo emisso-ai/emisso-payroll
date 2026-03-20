@@ -9,8 +9,8 @@ import {
   validateRut,
   formatRut,
   formatCLP,
-} from "@emisso/payroll";
-import type { EmployeePayrollInput, NetToGrossInput } from "@emisso/payroll";
+} from "@emisso/payroll-cl";
+import type { EmployeePayrollInput, NetToGrossInput } from "@emisso/payroll-cl";
 import { makeTestRenderer, OutputRenderer } from "@emisso/cli-core";
 
 const sampleEmployee: EmployeePayrollInput = {

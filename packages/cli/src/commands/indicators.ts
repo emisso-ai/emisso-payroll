@@ -4,7 +4,7 @@
 
 import { Command, Options } from "@effect/cli";
 import { Effect } from "effect";
-import { DEFAULT_REFERENCE_DATA, formatCLP } from "@emisso/payroll";
+import { DEFAULT_REFERENCE_DATA, formatCLP } from "@emisso/payroll-cl";
 import {
   OutputRenderer,
   CliError,
@@ -35,7 +35,7 @@ export const indicatorsCommand = Command.make(
 
       if (source === "mindicador" || source === "sii") {
         const providers = yield* Effect.tryPromise({
-          try: () => import("@emisso/payroll/providers"),
+          try: () => import("@emisso/payroll-cl/providers"),
           catch: (error) =>
             new CliError({
               kind: "general",

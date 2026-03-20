@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import { validateRut, formatRut } from "@emisso/payroll";
+import { validateRut, formatRut } from "@emisso/payroll-cl";
 import type { EmployeeRepo } from "../repos/employee-repo.js";
 import type { Employee, NewEmployee } from "../db/schema/index.js";
 import {

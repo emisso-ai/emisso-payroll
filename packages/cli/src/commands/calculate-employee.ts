@@ -8,8 +8,8 @@ import {
   calculateEmployeePayroll,
   DEFAULT_REFERENCE_DATA,
   formatCLP,
-} from "@emisso/payroll";
-import type { EmployeePayrollInput } from "@emisso/payroll";
+} from "@emisso/payroll-cl";
+import type { EmployeePayrollInput } from "@emisso/payroll-cl";
 import {
   OutputRenderer,
   resolveFormat,
