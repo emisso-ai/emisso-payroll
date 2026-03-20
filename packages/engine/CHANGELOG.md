@@ -1,5 +1,11 @@
 # @emisso/payroll
 
+## 0.2.0
+
+### Minor Changes
+
+- 3c4f4e1: Add well-known earning types (bonus, viatico, aguinaldo, etc.) with legally-mandated imponible/taxable defaults based on Art. 41 Código del Trabajo. The isTaxable and isImponible fields are now optional — inferred from type when omitted.
+
 ## 0.1.3
 
 ### Patch Changes
