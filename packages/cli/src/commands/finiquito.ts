@@ -8,8 +8,8 @@ import {
   calculateFiniquito,
   DEFAULT_REFERENCE_DATA,
   formatCLP,
-} from "@emisso/payroll";
-import type { TerminationType } from "@emisso/payroll";
+} from "@emisso/payroll-cl";
+import type { TerminationType } from "@emisso/payroll-cl";
 import {
   OutputRenderer,
   CliError,

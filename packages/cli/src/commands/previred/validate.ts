@@ -4,7 +4,7 @@
 
 import { Command } from "@effect/cli";
 import { Effect } from "effect";
-import { validatePreviredData } from "@emisso/payroll";
+import { validatePreviredData } from "@emisso/payroll-cl";
 import {
   OutputRenderer,
   resolveFormat,
