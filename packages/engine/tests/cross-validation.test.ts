@@ -620,15 +620,15 @@ describe('Scenario 6: Convenida gratification — fixed 100000/month, AFP Modelo
 
 // ---------------------------------------------------------------------------
 // Scenario 7: Variable earnings — overtime (imponible + taxable) and
-//             non-imponible, non-taxable bonus
+//             non-imponible aguinaldo (Art. 41 CT exempt)
 // ---------------------------------------------------------------------------
 //
 // baseSalary    = 700000
 // gratification = round(min(175000, 213354.17)) = 175000  [25% wins]
-// overtime      = 150000  (isImponible: true, isTaxable: true)
-// bonus         = 50000   (isImponible: false, isTaxable: false)
-// totalImponible= 700000 + 175000 + 150000 = 1025000  [bonus excluded]
-// totalTaxable  = 700000 + 175000 + 150000 = 1025000  [bonus excluded]
+// overtime      = 150000  (always imponible + taxable)
+// aguinaldo     = 50000   (always non-imponible, non-taxable — Art. 41 CT)
+// totalImponible= 700000 + 175000 + 150000 = 1025000  [aguinaldo excluded]
+// totalTaxable  = 700000 + 175000 + 150000 = 1025000  [aguinaldo excluded]
 // AFP  (Capital 11.44%) = round(1025000 * 0.1144) = 117260
 // health (7%)          = round(1025000 * 0.07)   = 71750
 // unem (0.6%)          = round(1025000 * 0.006)  = 6150
@@ -636,7 +636,7 @@ describe('Scenario 6: Convenida gratification — fixed 100000/month, AFP Modelo
 // 829840 / 38500 = 21.5543 UF -> bracket [13.5,30) rate 4% deduction 0.54
 // taxInUF = 21.5543 * 0.04 - 0.54 = 0.32217
 // tax = round(0.32217 * 38500)          = 12404
-// totalEarnings: base(700000) + grat(175000) + overtime(150000) + bonus(50000) = 1075000
+// totalEarnings: base(700000) + grat(175000) + overtime(150000) + aguinaldo(50000) = 1075000
 // totalDeductions = 117260 + 71750 + 6150 + 12404 = 207564
 // netPay          = 1075000 - 207564     = 867436
 // SIS  (1.54%)       = round(1025000 * 0.0154) = 15785
@@ -645,7 +645,7 @@ describe('Scenario 6: Convenida gratification — fixed 100000/month, AFP Modelo
 // pensionReform (2%) = round(1025000 * 0.02)   = 20500
 // ---------------------------------------------------------------------------
 
-describe('Scenario 7: Variable earnings — overtime (imponible) + non-imponible bonus, AFP Capital', () => {
+describe('Scenario 7: Variable earnings — overtime (imponible) + aguinaldo (Art. 41 exempt), AFP Capital', () => {
   const employee = makeEmployee({
     employeeId: '00000000-0000-0000-0000-000000000007',
     baseSalary: 700000,
@@ -663,11 +663,9 @@ describe('Scenario 7: Variable earnings — overtime (imponible) + non-imponible
         isTaxable: true,
       },
       {
-        type: 'bonus',
-        description: 'Bono especial no imponible',
+        type: 'aguinaldo',
+        description: 'Aguinaldo Fiestas Patrias',
         amount: 50000,
-        isImponible: false,
-        isTaxable: false,
       },
     ],
   });
@@ -677,15 +675,15 @@ describe('Scenario 7: Variable earnings — overtime (imponible) + non-imponible
     expect(result.earnings.gratification).toBe(175000);
   });
 
-  it('includes overtime in totalImponible, excludes non-imponible bonus', () => {
+  it('includes overtime in totalImponible, excludes aguinaldo', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
     expect(result.earnings.totalImponible).toBe(1025000);
   });
 
-  it('categorizes overtime and bonus correctly in earnings breakdown', () => {
+  it('categorizes overtime and aguinaldo correctly in earnings breakdown', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
     expect(result.earnings.overtime).toBe(150000);
-    expect(result.earnings.bonuses).toBe(50000);
+    expect(result.earnings.other).toBe(50000);
   });
 
   it('computes AFP on imponible base including overtime', () => {
@@ -708,7 +706,7 @@ describe('Scenario 7: Variable earnings — overtime (imponible) + non-imponible
     expect(result.deductions.incomeTax).toBe(12404);
   });
 
-  it('includes non-imponible bonus in total earnings (employee receives it in liquid pay)', () => {
+  it('includes aguinaldo in total earnings (employee receives it in liquid pay)', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
     expect(result.netPay).toBe(867436);
   });
