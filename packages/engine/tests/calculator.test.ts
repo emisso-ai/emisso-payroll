@@ -190,6 +190,7 @@ describe('Payroll Calculator', () => {
   });
 
   it('should fall back to defaults when fetch fails and referenceData omitted', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
     clearIndicatorCache();
 
@@ -204,6 +205,7 @@ describe('Payroll Calculator', () => {
     expect(results[0].netPay).toBeGreaterThan(0);
 
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
     clearIndicatorCache();
   });
 
