@@ -71,15 +71,15 @@ describe('Payroll Calculator', () => {
     expect(result.earnings.totalNonTaxable).toBe(87302);
 
     // Deductions
-    expect(result.deductions.afp).toBe(17472);
+    expect(result.deductions.afp).toBe(138808);
     expect(result.deductions.health).toBe(84935);
     expect(result.deductions.unemployment).toBe(7280);
     expect(result.deductions.apv).toBe(0);
-    expect(result.deductions.incomeTax).toBe(23357);
+    expect(result.deductions.incomeTax).toBe(18503);
     expect(result.deductions.additionalDeductions).toBe(0);
-    expect(result.deductions.total).toBe(133044);
+    expect(result.deductions.total).toBe(249526);
 
-    expect(result.netPay).toBe(1_167_612);
+    expect(result.netPay).toBe(1_051_130);
 
     // Employer costs (pre-reform: pensionReform = 0)
     expect(result.employerCosts.mutual).toBe(11284);

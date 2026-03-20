@@ -10,22 +10,27 @@ const afpRates: Record<string, { commissionRate: number; sisRate: number }> = {
 };
 
 describe('AFP Calculation', () => {
-  it('should calculate AFP deduction correctly', () => {
+  it('should include mandatory 10% plus commission rate', () => {
+    // capital: 10% + 1.44% = 11.44%
     const result = calculateAFP(1_000_000, 'capital', afpRates, UF);
-    expect(result).toBe(14400);
+    expect(result).toBe(114400);
   });
 
   it('should respect 81.6 UF cap', () => {
+    // cap = 81.6 * 38500 = 3,141,600
+    // capital: 3,141,600 * 11.44% = 359,399
     const result = calculateAFP(4_000_000, 'capital', afpRates, UF);
-    expect(result).toBe(45239);
+    expect(result).toBe(359399);
   });
 
   it('should use correct commission rate by provider', () => {
+    // habitat: 10% + 1.27% = 11.27% → 1,000,000 * 11.27% = 112,700
     const habitat = calculateAFP(1_000_000, 'habitat', afpRates, UF);
-    expect(habitat).toBe(12700);
+    expect(habitat).toBe(112700);
 
+    // modelo: 10% + 0.58% = 10.58% → 1,000,000 * 10.58% = 105,800
     const modelo = calculateAFP(1_000_000, 'modelo', afpRates, UF);
-    expect(modelo).toBe(5800);
+    expect(modelo).toBe(105800);
   });
 
   it('should throw for unknown AFP provider', () => {
@@ -35,7 +40,8 @@ describe('AFP Calculation', () => {
   });
 
   it('should handle income exactly at cap', () => {
+    // 3,141,600 is exactly 81.6 UF → capital 11.44% = 359,399
     const result = calculateAFP(3_141_600, 'capital', afpRates, UF);
-    expect(result).toBe(45239);
+    expect(result).toBe(359399);
   });
 });
