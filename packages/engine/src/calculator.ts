@@ -72,6 +72,7 @@ export function calculateEmployeePayroll(
   let otherEarningsTotal = 0;
   let imponibleEarnings = 0;
   let taxableEarnings = 0;
+  let nonTaxableEarnings = 0;
 
   for (const earning of employee.earnings) {
     const amount = roundCLP(earning.amount);
@@ -100,6 +101,9 @@ export function calculateEmployeePayroll(
     if (isTaxable) {
       taxableEarnings = sum(taxableEarnings, amount);
     }
+    if (!isImponible && !isTaxable) {
+      nonTaxableEarnings = sum(nonTaxableEarnings, amount);
+    }
   }
 
   // Family allowance (tax-exempt, non-imponible)
@@ -122,7 +126,7 @@ export function calculateEmployeePayroll(
   const totalTaxable = sum(baseSalary, gratification, taxableEarnings);
 
   // Non-taxable = colacion + movilizacion + familyAllowance + non-taxable/non-imponible earnings
-  const totalNonTaxable = sum(colacion, movilizacion, familyAllowance);
+  const totalNonTaxable = sum(colacion, movilizacion, familyAllowance, nonTaxableEarnings);
 
   // --- 3. Deductions ---
 
@@ -242,7 +246,6 @@ export function resolveEarningFlags(
 
     case 'allowance':
     case 'other':
-    default:
       return { isImponible: isImponible ?? true, isTaxable: isTaxable ?? true };
   }
 }

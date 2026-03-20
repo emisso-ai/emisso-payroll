@@ -200,7 +200,9 @@ describe('Payroll Calculator', () => {
     // Viatico should not affect imponible or taxable base
     expect(withViatico.earnings.totalImponible).toBe(without.earnings.totalImponible);
     expect(withViatico.earnings.totalTaxable).toBe(without.earnings.totalTaxable);
-    // But employee receives it in liquid pay
+    // But it should appear in totalNonTaxable
+    expect(withViatico.earnings.totalNonTaxable).toBe(without.earnings.totalNonTaxable + 100000);
+    // And employee receives it in liquid pay
     expect(withViatico.netPay).toBe(without.netPay + 100000);
   });
 
@@ -245,5 +247,18 @@ describe('Payroll Calculator', () => {
 
     // Explicit flags on allowance should be respected
     expect(result.earnings.totalImponible).toBe(sampleEmployee.baseSalary + 213354);
+  });
+
+  it('should handle asymmetric flags on allowance (imponible but not taxable)', () => {
+    const employee: EmployeePayrollInput = {
+      ...sampleEmployee,
+      earnings: [
+        { type: 'allowance', description: 'Asignación especial', amount: 80000, isImponible: true, isTaxable: false },
+      ],
+    };
+    const result = calculateEmployeePayroll(employee, referenceData, PRE_REFORM_DATE);
+
+    expect(result.earnings.totalImponible).toBe(sampleEmployee.baseSalary + 213354 + 80000);
+    expect(result.earnings.totalTaxable).toBe(sampleEmployee.baseSalary + 213354);
   });
 });
