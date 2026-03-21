@@ -1,6 +1,6 @@
 {
   "name": "@emisso/payroll-cli",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "CLI for Chilean payroll calculations — AFP, health, tax, Previred, and more",
   "type": "module",
   "main": "./dist/src/index.cjs",

@@ -1,5 +1,11 @@
 # @emisso/payroll
 
+## 0.4.0
+
+### Minor Changes
+
+- 3b86278: Add fetchIndicatorsForPeriod(year, month) to providers for fetching historical UF/UTM values from mindicador.cl. Returns indicators for the last day of the specified month.
+
 ## 0.3.0
 
 ### Minor Changes

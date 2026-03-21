@@ -1,5 +1,12 @@
 # @emisso/payroll-cli
 
+## 0.2.7
+
+### Patch Changes
+
+- Updated dependencies [3b86278]
+  - @emisso/payroll-cl@0.4.0
+
 ## 0.2.6
 
 ### Patch Changes
