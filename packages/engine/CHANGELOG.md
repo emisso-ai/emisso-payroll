@@ -1,5 +1,11 @@
 # @emisso/payroll
 
+## 0.3.0
+
+### Minor Changes
+
+- e645b3e: Auto-resolve reference data when omitted from calculatePayroll. Fetches live UF + UTM from mindicador.cl, caches for the process lifetime, and falls back to defaults on failure.
+
 ## 0.2.2
 
 ### Patch Changes
