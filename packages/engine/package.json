@@ -1,6 +1,6 @@
 {
   "name": "@emisso/payroll-cl",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Chilean payroll calculation engine — AFP, health, tax, unemployment, Previred, and more",
   "type": "module",
   "main": "./dist/index.cjs",
