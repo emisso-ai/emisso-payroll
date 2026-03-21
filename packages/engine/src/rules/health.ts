@@ -2,7 +2,12 @@
  * Health insurance calculation rules
  *
  * - Fonasa: 7% of imponible income
- * - Isapre: max(7% of imponible, isapreUFAmount * uf)
+ * - Isapre: max(7% of imponible, total plan cost in UF * uf)
+ *
+ * For Isapre employees, the full cotización de salud is deducted from
+ * the income tax base. When the plan costs more than 7%, the total
+ * plan cost is deducted (7% mandatory + "adicional isapre").
+ * The isapreUFAmount parameter is the TOTAL plan cost in UF.
  */
 
 import { percentage, roundCLP } from '../money.js';

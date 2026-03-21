@@ -57,7 +57,7 @@ export const EmployeePayrollInputSchema = z.object({
   afpCode: z.string(),
   afpFund: z.enum(['a', 'b', 'c', 'd', 'e']),
   healthPlan: z.enum(['fonasa', 'isapre']),
-  isapreAmount: z.number().optional().describe('Additional UF amount'),
+  isapreAmount: z.number().optional().describe('Total Isapre plan cost in UF (e.g. 6.55 UF). The deduction will be max(7%, plan cost).'),
   apvAmount: z.number().optional().describe('Voluntary pension savings'),
   familyAllowanceLoads: z.number().int().min(0),
   contractType: z.enum(['indefinido', 'plazo_fijo', 'por_obra']).optional().default('indefinido'),
