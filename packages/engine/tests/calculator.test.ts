@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi, afterEach } from 'vitest';
 import { calculatePayroll, calculateEmployeePayroll } from '../src/calculator.js';
+import { clearIndicatorCache } from '../src/fetch-indicators.js';
 import type { EmployeePayrollInput, ReferenceData } from '../src/types.js';
 
 const referenceData: ReferenceData = {
@@ -163,6 +164,49 @@ describe('Payroll Calculator', () => {
     expect(result.employerCosts.total).toBe(
       result.employerCosts.mutual + result.employerCosts.sis + result.employerCosts.unemployment + result.employerCosts.pensionReform
     );
+  });
+
+  it('should auto-resolve reference data when omitted', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ uf: { valor: 38500 }, utm: { valor: 65967 } }),
+    }));
+    clearIndicatorCache();
+
+    const results = await calculatePayroll({
+      employees: [sampleEmployee],
+      periodYear: 2025,
+      periodMonth: 7,
+      periodDate: PRE_REFORM_DATE,
+    });
+
+    expect(results).toHaveLength(1);
+    expect(results[0].employeeId).toBe(sampleEmployee.employeeId);
+    expect(results[0].netPay).toBeGreaterThan(0);
+    expect(results[0].deductions.afp).toBeGreaterThan(0);
+
+    vi.unstubAllGlobals();
+    clearIndicatorCache();
+  });
+
+  it('should fall back to defaults when fetch fails and referenceData omitted', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+    clearIndicatorCache();
+
+    const results = await calculatePayroll({
+      employees: [sampleEmployee],
+      periodYear: 2025,
+      periodMonth: 7,
+      periodDate: PRE_REFORM_DATE,
+    });
+
+    expect(results).toHaveLength(1);
+    expect(results[0].netPay).toBeGreaterThan(0);
+
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    clearIndicatorCache();
   });
 
   it('should handle additional earnings and deductions', () => {

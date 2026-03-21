@@ -13,6 +13,7 @@ import type {
   EmployeePayrollInput,
   ReferenceData,
 } from './types.js';
+import { resolveReferenceData } from './fetch-indicators.js';
 import { calculateAFP } from './rules/afp.js';
 import { calculateAPV } from './rules/apv.js';
 import { calculateFamilyAllowance } from './rules/family-allowance.js';
@@ -31,9 +32,10 @@ import { calculateEmployerPensionReform } from './rules/employer-pension-reform.
  * @returns Array of calculation results, one per employee
  */
 export async function calculatePayroll(input: CalculationInput): Promise<CalculationResult[]> {
+  const referenceData = input.referenceData ?? await resolveReferenceData();
   const periodDate = input.periodDate ?? new Date(input.periodYear, input.periodMonth - 1, 1);
   return input.employees.map((employee) =>
-    calculateEmployeePayroll(employee, input.referenceData, periodDate)
+    calculateEmployeePayroll(employee, referenceData, periodDate)
   );
 }
 
