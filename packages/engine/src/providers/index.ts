@@ -1,4 +1,4 @@
-export { fetchCurrentIndicators } from './mindicador.js';
+export { fetchCurrentIndicators, fetchIndicatorsForPeriod } from './mindicador.js';
 export type { EconomicIndicators, MindicadorFetchError } from './mindicador.js';
 
 export { fetchIndicatorsFromSII } from './sii-rss.js';
