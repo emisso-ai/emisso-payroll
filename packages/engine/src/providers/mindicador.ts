@@ -188,6 +188,10 @@ export function fetchCurrentIndicators(): Effect.Effect<
  * @param month - 1-12, e.g., 2 for febrero
  * @returns Effect that resolves to economic indicators or fails with typed error
  *
+ * Note: requesting the current in-progress month may fail if the last day
+ * hasn't occurred yet and mindicador.cl has no data for that date.
+ * For current-month calculations, use fetchCurrentIndicators() instead.
+ *
  * @example
  * ```typescript
  * import { Effect } from "effect";
@@ -209,8 +213,36 @@ export function fetchIndicatorsForPeriod(
   month: number
 ): Effect.Effect<EconomicIndicators, MindicadorFetchError, never> {
   return Effect.gen(function* () {
-    // Last day of the month
+    // Validate inputs
+    if (!Number.isInteger(month) || month < 1 || month > 12) {
+      return yield* Effect.fail(
+        ValidationError.make([{
+          path: "month",
+          message: `El mes debe ser un entero entre 1 y 12, recibido: ${month}`,
+        }])
+      );
+    }
+
+    if (!Number.isInteger(year) || year < 1990 || year > new Date().getFullYear() + 1) {
+      return yield* Effect.fail(
+        ValidationError.make([{
+          path: "year",
+          message: `El año debe ser un entero entre 1990 y ${new Date().getFullYear() + 1}, recibido: ${year}`,
+        }])
+      );
+    }
+
+    // Check for future periods
     const lastDay = new Date(year, month, 0);
+    if (lastDay > new Date()) {
+      return yield* Effect.fail(
+        ValidationError.make([{
+          path: "period",
+          message: `El periodo solicitado (${String(month).padStart(2, "0")}/${year}) aún no ha ocurrido`,
+        }])
+      );
+    }
+
     const dd = String(lastDay.getDate()).padStart(2, "0");
     const mm = String(month).padStart(2, "0");
     const dateStr = `${dd}-${mm}-${year}`;
@@ -227,9 +259,9 @@ export function fetchIndicatorsForPeriod(
       parseJSON(utmResponse),
     ], { concurrency: 2 });
 
-    // Extract values from serie array
-    const ufValue = yield* extractSerieValue(ufJson, "uf");
-    const utmValue = yield* extractSerieValue(utmJson, "utm");
+    // Extract values from serie array (rounded to integer CLP)
+    const ufValue = Math.round(yield* extractSerieValue(ufJson, "uf"));
+    const utmValue = Math.round(yield* extractSerieValue(utmJson, "utm"));
 
     return {
       uf: ufValue,
@@ -244,44 +276,10 @@ export function fetchIndicatorsForPeriod(
 // ============================================================================
 
 /**
- * Fetches raw response from mindicador.cl API
+ * Fetches raw response from mindicador.cl base API
  */
 function fetchFromAPI(): Effect.Effect<Response, NetworkError, never> {
-  return Effect.tryPromise({
-    try: async () => {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-      try {
-        const response = await fetch(MINDICADOR_API_URL, {
-          method: "GET",
-          headers: {
-            "Accept": "application/json",
-            "User-Agent": "EmissoPayroll/1.0",
-          },
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-        return response;
-      } catch (error) {
-        clearTimeout(timeoutId);
-        throw error;
-      }
-    },
-    catch: (error) => NetworkError.make(MINDICADOR_API_URL, error),
-  }).pipe(
-    Effect.flatMap((response) => {
-      if (!response.ok) {
-        return Effect.fail(
-          NetworkError.make(
-            MINDICADOR_API_URL,
-            new Error(`HTTP ${response.status}: ${response.statusText}`)
-          )
-        );
-      }
-      return Effect.succeed(response);
-    })
-  );
+  return fetchFromURL(MINDICADOR_API_URL);
 }
 
 /**
