@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { calculateIncomeTax } from '../../src/rules/income-tax.js';
 
-const UF = 38500;
+const UTM = 65967;
 
 const taxBrackets = [
   { from: 0,    to: 13.5,  rate: 0,    deduction: 0 },
@@ -16,32 +16,40 @@ const taxBrackets = [
 
 describe('Income Tax Calculation', () => {
   it('should calculate tax for first bracket (exempt)', () => {
-    const result = calculateIncomeTax(400_000, taxBrackets, UF);
+    // 400000 / 65967 = 6.0638 UTM -> bracket [0,13.5) exempt
+    const result = calculateIncomeTax(400_000, taxBrackets, UTM);
     expect(result).toBe(0);
   });
 
   it('should calculate tax for second bracket (4%)', () => {
-    const result = calculateIncomeTax(770_000, taxBrackets, UF);
-    expect(result).toBe(10010);
+    // 770000 / 65967 = 11.6724 UTM -> bracket [0,13.5) exempt
+    const result = calculateIncomeTax(770_000, taxBrackets, UTM);
+    expect(result).toBe(0);
   });
 
   it('should handle tax-exempt income', () => {
-    const result = calculateIncomeTax(0, taxBrackets, UF);
+    const result = calculateIncomeTax(0, taxBrackets, UTM);
     expect(result).toBe(0);
   });
 
   it('should handle negative income', () => {
-    const result = calculateIncomeTax(-100_000, taxBrackets, UF);
+    const result = calculateIncomeTax(-100_000, taxBrackets, UTM);
     expect(result).toBe(0);
   });
 
   it('should apply progressive rates correctly', () => {
-    const result = calculateIncomeTax(1_540_000, taxBrackets, UF);
-    expect(result).toBe(56210);
+    // 1540000 / 65967 = 23.3449 UTM -> bracket [13.5,30) rate 4% deduction 0.54
+    // taxInUTM = 23.3449 * 0.04 - 0.54 = 0.39380
+    // tax = round(0.39380 * 65967) = 25972
+    const result = calculateIncomeTax(1_540_000, taxBrackets, UTM);
+    expect(result).toBe(25978);
   });
 
   it('should calculate tax for high income bracket', () => {
-    const result = calculateIncomeTax(3_850_000, taxBrackets, UF);
-    expect(result).toBe(485100);
+    // 3850000 / 65967 = 58.3633 UTM -> bracket [50,70) rate 13.5% deduction 4.49
+    // taxInUTM = 58.3633 * 0.135 - 4.49 = 3.3790
+    // tax = round(3.3790 * 65967) = 222940
+    const result = calculateIncomeTax(3_850_000, taxBrackets, UTM);
+    expect(result).toBe(223558);
   });
 });

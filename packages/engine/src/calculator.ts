@@ -52,7 +52,7 @@ export function calculateEmployeePayroll(
   referenceData: ReferenceData,
   periodDate?: Date,
 ): CalculationResult {
-  const { uf, imm, afpRates, taxBrackets, familyAllowanceBrackets, mutualRate } = referenceData;
+  const { uf, utm, imm, afpRates, taxBrackets, familyAllowanceBrackets, mutualRate } = referenceData;
 
   // --- 1. Earnings phase ---
 
@@ -150,7 +150,7 @@ export function calculateEmployeePayroll(
     sum(afp, health, apv, unemployment.employee)
   );
 
-  const incomeTax = calculateIncomeTax(incomeTaxBase, taxBrackets, uf);
+  const incomeTax = calculateIncomeTax(incomeTaxBase, taxBrackets, utm);
 
   // Additional deductions from deductions array
   let additionalDeductions = 0;

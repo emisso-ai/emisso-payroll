@@ -15,7 +15,7 @@
  *   health(isapre)        = max(round(totalImponible * 7 / 100), round(isapreUF * UF))
  *   unemployment(emp)     = round(totalImponible * 0.6 / 100)
  *   incomeTaxBase         = totalTaxable - AFP - health - APV - unemployment
- *   incomeTax             = bracket formula applied in UF
+ *   incomeTax             = bracket formula applied in UTM
  *   netPay                = totalEarnings - totalDeductions
  *   SIS                   = round(min(totalImponible, 81.6 * UF) * sisRate / 100)
  *   empUnemployment       = round(totalImponible * (2.4% indefinido | 3.0% plazo_fijo))
@@ -45,7 +45,7 @@ const REF: ReferenceData = {
     uno:       { commissionRate: 0.46, sisRate: 1.54 },
   },
   fonasaRate: 7,
-  // Tax brackets: from/to in UF, rate in %, deduction in UF
+  // Tax brackets: from/to in UTM, rate in %, deduction in UTM
   taxBrackets: [
     { from: 0,    to: 13.5,  rate: 0,    deduction: 0 },
     { from: 13.5, to: 30,    rate: 4,    deduction: 0.54 },
@@ -108,12 +108,11 @@ function makeEmployee(overrides: Partial<EmployeePayrollInput>): EmployeePayroll
 // health (7%)         = round(673750 * 0.07)    = 47163
 // unem employee (0.6%)= round(673750 * 0.006)   = 4043
 // incomeTaxBase = 673750 - 71283 - 47163 - 4043  = 551261
-// 551261 / 38500 = 14.3184 UF -> bracket [13.5,30) rate 4% deduction 0.54
-// taxInUF = 14.3184 * 0.04 - 0.54 = 0.03274
-// tax = round(0.03274 * 38500)                  = 1260
+// 551261 / 65967 = 8.3567 UTM -> bracket [0,13.5) exempt
+// tax = 0
 // totalEarnings      = 673750
-// totalDeductions    = 71283 + 47163 + 4043 + 1260 = 123749
-// netPay             = 673750 - 123749            = 550001
+// totalDeductions    = 71283 + 47163 + 4043 + 0 = 122489
+// netPay             = 673750 - 122489            = 551261
 // SIS  (1.54%)       = round(673750 * 0.0154)   = 10376
 // mutual (0.93%)     = round(673750 * 0.0093)   = 6266
 // empUnemployment (2.4% indefinido) = round(673750 * 0.024) = 16170
@@ -160,12 +159,12 @@ describe('Scenario 1: Minimum wage, Fonasa, AFP Modelo', () => {
 
   it('computes correct income tax (bracket 2: 4%)', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
-    expect(result.deductions.incomeTax).toBe(1260);
+    expect(result.deductions.incomeTax).toBe(0);
   });
 
   it('computes correct net pay', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
-    expect(result.netPay).toBe(550001);
+    expect(result.netPay).toBe(551261);
   });
 
   it('computes correct employer SIS cost (Modelo 1.54%)', () => {
@@ -196,14 +195,14 @@ describe('Scenario 1: Minimum wage, Fonasa, AFP Modelo', () => {
 // health (7%)          = round(1413354 * 0.07)   = 98935
 // unem (0.6%)          = round(1413354 * 0.006)  = 8480
 // incomeTaxBase = 1413354 - 161688 - 98935 - 8480 = 1144251
-// 1144251 / 38500 = 29.7208 UF -> bracket [13.5,30) rate 4% deduction 0.54
-// taxInUF = 29.7208 * 0.04 - 0.54 = 0.64883
-// tax = round(0.64883 * 38500)               = 24980
+// 1144251 / 65967 = 17.3459 UTM -> bracket [13.5,30) rate 4% deduction 0.54
+// taxInUTM = 17.3459 * 0.04 - 0.54 = 0.15384
+// tax = round(0.15384 * 65967)               = 10148
 // familyAllowance: base=1200000 in [787001,1226759] -> 3651 * 2 = 7302
 // colacion=50000, movilizacion=30000 (non-imponible, non-taxable, included in pay)
 // totalEarnings = 1200000 + 213354 + 7302 + 50000 + 30000 = 1500656
-// totalDeductions= 161688 + 98935 + 8480 + 24980 = 294083
-// netPay         = 1500656 - 294083            = 1206573
+// totalDeductions= 161688 + 98935 + 8480 + 10148 = 279251
+// netPay         = 1500656 - 279251            = 1221405
 // SIS  (1.54%)       = round(1413354 * 0.0154) = 21766
 // mutual (0.93%)     = round(1413354 * 0.0093) = 13144
 // empUnemployment    = round(1413354 * 0.024)  = 33920
@@ -255,12 +254,12 @@ describe('Scenario 2: Mid-range salary, Fonasa, AFP Capital, colacion + moviliza
 
   it('computes correct income tax (bracket 3: 8%)', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
-    expect(result.deductions.incomeTax).toBe(24980);
+    expect(result.deductions.incomeTax).toBe(10148);
   });
 
   it('computes correct net pay (colacion + movilizacion + family allowance included)', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
-    expect(result.netPay).toBe(1206573);
+    expect(result.netPay).toBe(1221405);
   });
 
   it('computes correct employer SIS cost', () => {
@@ -291,12 +290,12 @@ describe('Scenario 2: Mid-range salary, Fonasa, AFP Capital, colacion + moviliza
 // health (7%, NO CAP in engine) = round(4213354 * 0.07)  = 294935
 // unem (0.6%)                   = round(4213354 * 0.006) = 25280
 // incomeTaxBase = 4213354 - 354058 - 294935 - 25280 = 3539081
-// 3539081 / 38500 = 91.9242 UF -> bracket [90,120) rate 30.4% deduction 17.8
-// taxInUF = 91.9242 * 0.304 - 17.8 = 10.1450
-// tax = round(10.1450 * 38500)          = 390581
+// 3539081 / 65967 = 53.6502 UTM -> bracket [50,70) rate 13.5% deduction 4.49
+// taxInUTM = 53.6502 * 0.135 - 4.49 = 2.7528
+// tax = round(2.7528 * 65967)          = 181584
 // totalEarnings   = 4000000 + 213354 = 4213354
-// totalDeductions = 354058 + 294935 + 25280 + 390581 = 1064854
-// netPay          = 4213354 - 1064854   = 3148500
+// totalDeductions = 354058 + 294935 + 25280 + 181584 = 855857
+// netPay          = 4213354 - 855857   = 3357497
 // SIS  (1.54%, CAPPED) = round(3141600 * 0.0154) = 48381
 // mutual (0.93%)       = round(4213354 * 0.0093) = 39184
 // empUnemployment      = round(4213354 * 0.024)  = 101120
@@ -343,12 +342,12 @@ describe('Scenario 3: High salary hitting AFP tope imponible (81.6 UF cap), AFP 
 
   it('computes correct income tax (bracket 6: 30.4%)', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
-    expect(result.deductions.incomeTax).toBe(390581);
+    expect(result.deductions.incomeTax).toBe(181584);
   });
 
   it('computes correct net pay', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
-    expect(result.netPay).toBe(3148500);
+    expect(result.netPay).toBe(3357497);
   });
 
   it('applies 81.6 UF cap to employer SIS cost', () => {
@@ -381,12 +380,12 @@ describe('Scenario 3: High salary hitting AFP tope imponible (81.6 UF cap), AFP 
 //   health       = max(119935, 134750)     = 134750  [isapre cost wins]
 // unem (0.6%)    = round(1713354 * 0.006)  = 10280
 // incomeTaxBase  = 1713354 - 196179 - 134750 - 10280 = 1372145
-// 1372145 / 38500 = 35.6401 UF -> bracket [30,50) rate 8% deduction 1.74
-// taxInUF = 35.6401 * 0.08 - 1.74 = 1.11121
-// tax = round(1.11121 * 38500)             = 42782
+// 1372145 / 65967 = 20.8005 UTM -> bracket [13.5,30) rate 4% deduction 0.54
+// taxInUTM = 20.8005 * 0.04 - 0.54 = 0.29202
+// tax = round(0.29202 * 65967)             = 19264
 // totalEarnings   = 1500000 + 213354 = 1713354
-// totalDeductions = 196179 + 134750 + 10280 + 42782 = 383991
-// netPay          = 1713354 - 383991       = 1329363
+// totalDeductions = 196179 + 134750 + 10280 + 19264 = 360473
+// netPay          = 1713354 - 360473       = 1352881
 // SIS  (1.54%)       = round(1713354 * 0.0154) = 26386
 // mutual (0.93%)     = round(1713354 * 0.0093) = 15934
 // empUnemployment    = round(1713354 * 0.024)  = 41120
@@ -427,12 +426,12 @@ describe('Scenario 4: Isapre employee — 3.5 UF plan, AFP Provida', () => {
 
   it('computes correct income tax (bracket 3: 8%, Isapre deduction reduces taxable base)', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
-    expect(result.deductions.incomeTax).toBe(42782);
+    expect(result.deductions.incomeTax).toBe(19264);
   });
 
   it('computes correct net pay', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
-    expect(result.netPay).toBe(1329363);
+    expect(result.netPay).toBe(1352881);
   });
 
   it('computes correct employer SIS cost (Provida 1.54%)', () => {
@@ -458,12 +457,11 @@ describe('Scenario 4: Isapre employee — 3.5 UF plan, AFP Provida', () => {
 // health (7%)      = round(1000000 * 0.07)   = 70000
 // unem (0.6%)      = round(1000000 * 0.006)  = 6000
 // incomeTaxBase = 1000000 - 104600 - 70000 - 6000 = 819400
-// 819400 / 38500 = 21.2831 UF -> bracket [13.5,30) rate 4% deduction 0.54
-// taxInUF = 21.2831 * 0.04 - 0.54 = 0.31132
-// tax = round(0.31132 * 38500)         = 11986
+// 819400 / 65967 = 12.4213 UTM -> bracket [0,13.5) exempt
+// tax = 0
 // totalEarnings   = 1000000
-// totalDeductions = 104600 + 70000 + 6000 + 11986 = 192586
-// netPay          = 1000000 - 192586     = 807414
+// totalDeductions = 104600 + 70000 + 6000 + 0 = 180600
+// netPay          = 1000000 - 180600     = 819400
 // SIS  (1.54%)       = round(1000000 * 0.0154) = 15400
 // mutual (0.93%)     = round(1000000 * 0.0093) = 9300
 // empUnemployment (PLAZO_FIJO 3.0%) = round(1000000 * 0.03) = 30000
@@ -508,12 +506,12 @@ describe('Scenario 5: Plazo fijo contract, AFP Uno — employer unemployment at 
 
   it('computes correct income tax', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
-    expect(result.deductions.incomeTax).toBe(11986);
+    expect(result.deductions.incomeTax).toBe(0);
   });
 
   it('computes correct net pay', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
-    expect(result.netPay).toBe(807414);
+    expect(result.netPay).toBe(819400);
   });
 
   it('applies 3.0% employer unemployment rate (plazo_fijo, not 2.4%)', () => {
@@ -543,12 +541,11 @@ describe('Scenario 5: Plazo fijo contract, AFP Uno — employer unemployment at 
 // health (7%)         = round(1000000 * 0.07)   = 70000
 // unem (0.6%)         = round(1000000 * 0.006)  = 6000
 // incomeTaxBase = 1000000 - 105800 - 70000 - 6000 = 818200
-// 818200 / 38500 = 21.2519 UF -> bracket [13.5,30) rate 4% deduction 0.54
-// taxInUF = 21.2519 * 0.04 - 0.54 = 0.31008
-// tax = round(0.31008 * 38500)          = 11938
+// 818200 / 65967 = 12.4031 UTM -> bracket [0,13.5) exempt
+// tax = 0
 // totalEarnings   = 900000 + 100000 = 1000000
-// totalDeductions = 105800 + 70000 + 6000 + 11938 = 193738
-// netPay          = 1000000 - 193738      = 806262
+// totalDeductions = 105800 + 70000 + 6000 + 0 = 181800
+// netPay          = 1000000 - 181800      = 818200
 // SIS  (1.54%)       = round(1000000 * 0.0154) = 15400
 // mutual (0.93%)     = round(1000000 * 0.0093) = 9300
 // empUnemployment    = round(1000000 * 0.024)  = 24000
@@ -594,12 +591,12 @@ describe('Scenario 6: Convenida gratification — fixed 100000/month, AFP Modelo
 
   it('computes correct income tax', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
-    expect(result.deductions.incomeTax).toBe(11938);
+    expect(result.deductions.incomeTax).toBe(0);
   });
 
   it('computes correct net pay', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
-    expect(result.netPay).toBe(806262);
+    expect(result.netPay).toBe(818200);
   });
 
   it('computes correct employer unemployment cost (indefinido 2.4%)', () => {
@@ -633,12 +630,11 @@ describe('Scenario 6: Convenida gratification — fixed 100000/month, AFP Modelo
 // health (7%)          = round(1025000 * 0.07)   = 71750
 // unem (0.6%)          = round(1025000 * 0.006)  = 6150
 // incomeTaxBase = 1025000 - 117260 - 71750 - 6150 = 829840
-// 829840 / 38500 = 21.5543 UF -> bracket [13.5,30) rate 4% deduction 0.54
-// taxInUF = 21.5543 * 0.04 - 0.54 = 0.32217
-// tax = round(0.32217 * 38500)          = 12404
+// 829840 / 65967 = 12.5797 UTM -> bracket [0,13.5) exempt
+// tax = 0
 // totalEarnings: base(700000) + grat(175000) + overtime(150000) + aguinaldo(50000) = 1075000
-// totalDeductions = 117260 + 71750 + 6150 + 12404 = 207564
-// netPay          = 1075000 - 207564     = 867436
+// totalDeductions = 117260 + 71750 + 6150 + 0 = 195160
+// netPay          = 1075000 - 195160     = 879840
 // SIS  (1.54%)       = round(1025000 * 0.0154) = 15785
 // mutual (0.93%)     = round(1025000 * 0.0093) = 9533
 // empUnemployment    = round(1025000 * 0.024)  = 24600
@@ -703,12 +699,12 @@ describe('Scenario 7: Variable earnings — overtime (imponible) + aguinaldo (Ar
 
   it('computes correct income tax', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
-    expect(result.deductions.incomeTax).toBe(12404);
+    expect(result.deductions.incomeTax).toBe(0);
   });
 
   it('includes aguinaldo in total earnings (employee receives it in liquid pay)', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
-    expect(result.netPay).toBe(867436);
+    expect(result.netPay).toBe(879840);
   });
 
   it('computes correct employer SIS cost (on imponible base)', () => {
@@ -739,13 +735,12 @@ describe('Scenario 7: Variable earnings — overtime (imponible) + aguinaldo (Ar
 // unem (0.6%)          = round(1213354 * 0.006)  = 7280
 // APV              = 100000
 // incomeTaxBase = 1213354 - 136745 - 84935 - 100000 - 7280 = 884394
-// 884394 / 38500 = 22.9713 UF -> bracket [13.5,30) rate 4% deduction 0.54
-// taxInUF = 22.9713 * 0.04 - 0.54 = 0.37885
-// tax = round(0.37885 * 38500)         = 14586
-// (without APV: taxBase=984394 -> 25.5687 UF -> tax=18519; APV saves ~3933 CLP in tax)
+// 884394 / 65967 = 13.4065 UTM -> bracket [0,13.5) exempt
+// tax = 0
+// (without APV: taxBase=984394 -> 14.9227 UTM -> bracket [13.5,30) -> tax=3671; APV saves 3671 CLP)
 // totalEarnings   = 1000000 + 213354 = 1213354
-// totalDeductions = 136745 + 84935 + 7280 + 14586 + 100000 = 343546
-// netPay          = 1213354 - 343546   = 869808
+// totalDeductions = 136745 + 84935 + 7280 + 0 + 100000 = 328960
+// netPay          = 1213354 - 328960   = 884394
 // SIS  (1.54%)       = round(1213354 * 0.0154) = 18686
 // mutual (0.93%)     = round(1213354 * 0.0093) = 11284
 // empUnemployment    = round(1213354 * 0.024)  = 29120
@@ -791,14 +786,14 @@ describe('Scenario 8: APV voluntary savings (100000 CLP) reduce taxable income, 
 
   it('computes lower income tax because APV reduces taxable base', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
-    // Without APV: incomeTaxBase=984394 -> tax=18519
-    // With APV:    incomeTaxBase=884394 -> tax=14586 (savings of ~3933 CLP)
-    expect(result.deductions.incomeTax).toBe(14586);
+    // Without APV: incomeTaxBase=984394 -> 14.9227 UTM -> tax=3671
+    // With APV:    incomeTaxBase=884394 -> 13.4065 UTM -> exempt (savings of 3671 CLP)
+    expect(result.deductions.incomeTax).toBe(0);
   });
 
   it('computes correct net pay (APV deducted from liquid pay)', () => {
     const result = calculateEmployeePayroll(employee, REF, PERIOD_DATE);
-    expect(result.netPay).toBe(869808);
+    expect(result.netPay).toBe(884394);
   });
 
   it('computes correct employer SIS cost (Habitat 1.54%)', () => {

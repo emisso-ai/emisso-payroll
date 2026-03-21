@@ -75,11 +75,11 @@ describe('Payroll Calculator', () => {
     expect(result.deductions.health).toBe(84935);
     expect(result.deductions.unemployment).toBe(7280);
     expect(result.deductions.apv).toBe(0);
-    expect(result.deductions.incomeTax).toBe(18503);
+    expect(result.deductions.incomeTax).toBe(3671);
     expect(result.deductions.additionalDeductions).toBe(0);
-    expect(result.deductions.total).toBe(249526);
+    expect(result.deductions.total).toBe(234694);
 
-    expect(result.netPay).toBe(1_051_130);
+    expect(result.netPay).toBe(1_065_962);
 
     // Employer costs (pre-reform: pensionReform = 0)
     expect(result.employerCosts.mutual).toBe(11284);
