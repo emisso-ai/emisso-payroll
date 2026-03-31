@@ -274,9 +274,8 @@ Import `fetchCurrentIndicators()` from `@emisso/payroll-cl/providers`. It fetche
 | Library | Language | Payroll Calc | Previred | Finiquito | Open Source | Self-Hosted API |
 |---------|----------|:---:|:---:|:---:|:---:|:---:|
 | **@emisso/payroll-cl** | TypeScript | ✅ | ✅ | ✅ | ✅ MIT | ✅ |
-| Buk | SaaS | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Talana | SaaS | ✅ | ✅ | ✅ | ❌ | ❌ |
 | Nubox Remuneraciones | Desktop/.NET | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Talana | SaaS | ✅ | ✅ | ❌ | ❌ | ❌ |
 | Remuner | SaaS | ✅ | ✅ | ❌ | ❌ | ❌ |
 
 ## License
