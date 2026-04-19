@@ -57,15 +57,15 @@
   "dependencies": {
     "@emisso/payroll-cl": "workspace:*",
     "@emisso/cli-core": "^0.1.0",
-    "effect": "^3.19.16",
-    "@effect/cli": "^0.73.0",
-    "@effect/platform": "^0.94.3",
-    "@effect/platform-node": "^0.104.0",
-    "@effect/printer": "^0.47.0",
-    "@effect/printer-ansi": "^0.47.0"
+    "effect": "^3.21.1",
+    "@effect/cli": "^0.75.1",
+    "@effect/platform": "^0.96.0",
+    "@effect/platform-node": "^0.106.0",
+    "@effect/printer": "^0.49.0",
+    "@effect/printer-ansi": "^0.49.0"
   },
   "devDependencies": {
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.6.0",
     "tsup": "^8.3.0",
     "tsx": "^4.21.0",
     "typescript": "^5.7.0",
